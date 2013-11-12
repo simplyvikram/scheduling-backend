@@ -47,3 +47,21 @@ schema_job = {
     },
     "additionalProperties": False
 }
+
+schema_employee = {
+    "$schema": schema_type,
+    "title": "Employee schema",
+    "type": "object",
+    "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "current_role": {
+            "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+    },
+    "additionalProperties": False
+}

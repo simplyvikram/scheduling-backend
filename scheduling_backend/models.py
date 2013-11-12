@@ -24,6 +24,10 @@ class Client(object):
 
 
 class Job(object):
+    tag_client_id = "client_id"
+    tag_start_date = "start_date"
+    tag_end_date = "end_date"
+    tag_location = "location"
 
     def __init__(self, client_id, start_date, end_date, location):
         self.client_id = client_id
@@ -34,12 +38,12 @@ class Job(object):
     @staticmethod
     def encode(obj):
         d = {
-            'start_date': obj.start_date,
-            'end_date': obj.end_date,
-            'location': obj.location,
-            'client_id': obj.client_id
+            Job.tag_start_date: obj.start_date,
+            Job.tag_end_date: obj.end_date,
+            Job.tag_location: obj.location,
+            Job.tag_client_id: obj.client_id
         }
         if obj.id is not None:
-            d['_id'] = obj._id
+            d[tag_id] = obj._id
 
         return d
