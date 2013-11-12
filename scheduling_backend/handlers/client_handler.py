@@ -3,7 +3,7 @@ from flask.ext.restful import Resource
 from flask import request
 from flask import current_app as current_app
 
-from scheduling_backend.utils_new import (
+from scheduling_backend.utils import (
     JsonUtils
 )
 from scheduling_backend.handlers import MessageDict, object_id_handler

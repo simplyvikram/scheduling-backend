@@ -1,7 +1,7 @@
 
 from functools import wraps
 
-from scheduling_backend.utils_new import JsonUtils
+from scheduling_backend.utils import JsonUtils
 
 
 class MessageDict(object):
@@ -22,20 +22,15 @@ def object_id_handler(func):
         set the data field of the resource object calling the func
         """
 
-        # data = request.get_json(force=False, silent=True)
         if inst.data is not None:
             inst.data = JsonUtils.change_str_ids_to_object_id(inst.data)
 
         resp = func(inst, *args, **kwargs)
 
-        # print "inside handle object ids - resp type:%s,  resp:%s" % \
-        #       (type(resp), resp)
-
         resp = JsonUtils.change_obj_ids_to_str_ids(resp)
         return resp
 
     return wrapper
-
 
 
 # from flask import current_app, request, Response

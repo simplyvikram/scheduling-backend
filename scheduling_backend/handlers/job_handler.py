@@ -2,7 +2,7 @@ from flask.ext.restful import Resource
 from flask import request
 from flask import current_app as current_app
 
-from scheduling_backend.utils_new import (
+from scheduling_backend.utils import (
     DateUtils,
     JsonUtils
 )
@@ -47,9 +47,11 @@ class JobHandler(Resource):
             if self.error:
                 return
 
+
     def transform_data(self):
         # todo do we need this?
         pass
+
 
     @object_id_handler
     def get(self, job_id=None):
@@ -61,16 +63,13 @@ class JobHandler(Resource):
                 return {}
 
             return job
-            # job_encoded = JsonUtils.change_obj_ids_to_str_ids(job)
-            # return job_encoded
 
         else:
             jobs_cursor = current_app.db.jobs.find()
             jobs_list = list(jobs_cursor)
 
             return jobs_list
-            # jobs_encoded = JsonUtils.change_obj_ids_to_str_ids(jobs_list)
-            # return jobs_encoded
+
 
     @object_id_handler
     def post(self):
@@ -83,6 +82,7 @@ class JobHandler(Resource):
         job = current_app.db.jobs.find_one({"_id": job_id})
 
         return job
+
 
     @object_id_handler
     def patch(self, job_id):

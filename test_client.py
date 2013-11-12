@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import date, datetime, time, timedelta
 import random
 from scheduling_backend.models import Client, Job
 import json
