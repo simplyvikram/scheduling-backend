@@ -4,43 +4,26 @@ from flask import current_app as current_app
 
 from scheduling_backend.utils import (
     DateUtils,
-    JsonUtils
 )
 from scheduling_backend.models import Job
-from scheduling_backend.handlers import MessageDict, object_id_handler
+from scheduling_backend.handlers import object_id_handler
+from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
 
 
-class JobHandler(Resource):
+class JobHandler(BaseHandler):
 
     def __init__(self):
-        super(JobHandler, self).__init__()
+        super(JobHandler, self).__init__(schema_job)
 
-        self.data = None
-        self.error = None
-
-        if request.method in ["PUT", "POST", "PATCH"]:
-
-            self.data = request.get_json(force=False, silent=False)
-
-            # If data is not in json, mark it as an error
-            print "Inside job init - data  type:%s, data:%s" % \
-                  (type(self.data), self.data)
-
-            if not self.data:
-                self.error = MessageDict.request_not_in_json
-            else:
-                self.error = JsonUtils.validate_json(self.data, schema_job)
-
-            if self.error:
-                return
-
+        if self.data:
+            # self.data would be not one only for post or patch
             self.validate_data(self.data)
 
 
     def validate_data(self, data):
         start_date = data.get(Job.tag_start_date, None)
-        end_date = data.get(Job.tag_start_date, None)
+        end_date = data.get(Job.tag_end_date, None)
 
         for d in [start_date, end_date]:
             self.error = DateUtils.validate(d, DateUtils.DATE)
@@ -75,8 +58,6 @@ class JobHandler(Resource):
     def post(self):
         if self.error:
             return self.error
-
-        print "Received DATA, type:%s, data:%s" % (type(self.data), self.data)
 
         job_id = current_app.db.jobs.insert(self.data)
         job = current_app.db.jobs.find_one({"_id": job_id})

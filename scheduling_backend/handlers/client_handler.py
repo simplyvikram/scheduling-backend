@@ -6,29 +6,15 @@ from flask import current_app as current_app
 from scheduling_backend.utils import (
     JsonUtils
 )
-from scheduling_backend.handlers import MessageDict, object_id_handler
+from scheduling_backend.handlers import object_id_handler
+from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
 
 
-class ClientHandler(Resource):
+class ClientHandler(BaseHandler):
 
     def __init__(self):
-        super(ClientHandler, self).__init__()
-        self.data = None
-        self.error = None
-
-        if request.method in ["PUT", "POST", "PATCH"]:
-
-            self.data = request.get_json(force=False, silent=True)
-
-            # If data is not in json, mark it as an error
-            if not self.data:
-                self.error = MessageDict.request_not_in_json
-            else:
-                self.error = JsonUtils.validate_json(self.data, schema_client)
-
-            if self.error:
-                return
+        super(ClientHandler, self).__init__(schema_client)
 
     @object_id_handler
     def get(self, obj_id=None):
