@@ -79,3 +79,27 @@ class Employee(object):
             d[tag_id] = obj._id
 
         return d
+
+
+class EmployeeShift(object):
+    tag_employee_id = "employee_id"
+
+    # todo do we need job shift id if the employee shift is part of job shift
+    # tag_job_shift_id = "job_shift_id"
+
+    # todo ask shaheen if we need this?
+    # todo especially if we employee shifts are inside jobshifts
+    # scheduled_start_time = "scheduled_start_time"
+    # scheduled_end_time = "scheduled_end_time"
+
+    tag_actual_start_time = "actual_start_time"
+    tag_actual_end_time = "actual_end_time"
+
+
+class JobShift(object):
+    tag_job_id = "job_id"
+    tag_job_date = "job_date"
+    tag_scheduled_start_time = "scheduled_start_time"
+    tag_scheduled_end_time = "scheduled_end_time"
+
+    tag_employee_shifts = "employee_shifts"
