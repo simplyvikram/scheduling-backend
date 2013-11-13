@@ -76,6 +76,7 @@ def register_views(app):
     from handlers.job_handler import JobHandler
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
+    from handlers import RoleHandler
 
     api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
     api.add_resource(JobHandler, '/jobs', endpoint="jobs")
@@ -86,7 +87,12 @@ def register_views(app):
     api.add_resource(ClientHandler, '/clients', endpoint="clients")
 
 
+    api.add_resource(EmployeeHandler, '/employees/<ObjectId:obj_id>',
+                     endpoint="employee")
     api.add_resource(EmployeeHandler, '/employees', endpoint="employees")
+
+
+    api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
 
     from views import views
     app.register_blueprint(views)

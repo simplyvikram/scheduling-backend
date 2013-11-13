@@ -1,4 +1,6 @@
 
+
+
 from flask.ext.restful import Resource
 from flask import request
 
@@ -13,9 +15,8 @@ from scheduling_backend.handlers import MessageDict
 
 class BaseHandler(Resource):
 
-    def __init__(self, schema):
 
-        print "Received schema", schema
+    def __init__(self, schema):
 
         super(BaseHandler, self).__init__()
 
@@ -31,10 +32,20 @@ class BaseHandler(Resource):
             if not self.data:
                 self.error = MessageDict.request_not_in_json
             else:
+                print "\n\nVALIDATING", self.data, "\n\nAGAINST", schema
                 self.error = JsonUtils.validate_json(self.data, self.schema)
 
-            if self.error:
-                return
+        if self.error:
+            return
+
+        if self.data:
+            # self.data would be not one only for post or patch
+            self.preprocess_data(self.data)
+
+
+    def preprocess_data(self, data):
+        msg = "Subclasses of Basehandler should implement valid_data"
+        raise NotImplementedError(msg)
 
 
     def put(self):

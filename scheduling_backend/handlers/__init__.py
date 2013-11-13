@@ -21,8 +21,13 @@ def object_id_handler(func):
         We extract inst(could have even used args[0]) as we want to
         set the data field of the resource object calling the func
         """
+        if inst.error:
+            print "inside object_id_handler", inst.error
+            return inst.error
+        else:
+            print "inside object_id_handler  NOOO error"
 
-        if inst.data is not None:
+        if inst.data:
             inst.data = JsonUtils.change_str_ids_to_object_id(inst.data)
 
         resp = func(inst, *args, **kwargs)
@@ -32,6 +37,12 @@ def object_id_handler(func):
 
     return wrapper
 
+from flask.ext.restful import Resource
+class RoleHandler(Resource):
+
+    def get(self):
+        from scheduling_backend.models import Employee
+        return Employee.roles()
 
 # from flask import current_app, request, Response
 # from scheduling_backend import the_context

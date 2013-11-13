@@ -16,12 +16,7 @@ class JobHandler(BaseHandler):
     def __init__(self):
         super(JobHandler, self).__init__(schema_job)
 
-        if self.data:
-            # self.data would be not one only for post or patch
-            self.validate_data(self.data)
-
-
-    def validate_data(self, data):
+    def preprocess_data(self, data):
         start_date = data.get(Job.tag_start_date, None)
         end_date = data.get(Job.tag_end_date, None)
 
@@ -29,11 +24,6 @@ class JobHandler(BaseHandler):
             self.error = DateUtils.validate(d, DateUtils.DATE)
             if self.error:
                 return
-
-
-    def transform_data(self):
-        # todo do we need this?
-        pass
 
 
     @object_id_handler
@@ -56,8 +46,6 @@ class JobHandler(BaseHandler):
 
     @object_id_handler
     def post(self):
-        if self.error:
-            return self.error
 
         job_id = current_app.db.jobs.insert(self.data)
         job = current_app.db.jobs.find_one({"_id": job_id})
@@ -67,8 +55,6 @@ class JobHandler(BaseHandler):
 
     @object_id_handler
     def patch(self, job_id):
-        if self.error:
-            return self.error
 
         current_app.db.jobs.update({"_id": job_id}, {'$set': self.data})
 

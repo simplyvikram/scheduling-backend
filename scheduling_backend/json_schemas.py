@@ -1,18 +1,21 @@
 
 schema_type = "http://json-schema.org/draft-04/schema#"
 
+from models import tag_id, Client, Job, Employee
+
+
 schema_client = {
     "$schema": schema_type,
     "title": "Client schema",
     "type": "object",
     "properties": {
-        "_id": {
+        tag_id: {
             "type": "string"
         },
-        "name": {
+        Client.tag_name: {
             "type": "string"
         },
-        "active": {
+        Client.tag_active: {
             "type": "boolean"
         }
     },
@@ -24,23 +27,23 @@ schema_job = {
     "title": "Job schema",
     "type": "object",
     "properties": {
-        "_id": {
-          "type": "string"
-        },
-        "client_id": {
+        tag_id: {
             "type": "string"
         },
-        "client_name": {
-          "type": "string"
-        },
-        "location": {
+        Job.tag_client_id: {
             "type": "string"
         },
-        "start_date": {
+        Job.tag_name: {
+            "type": "string"
+        },
+        Job.tag_location: {
+            "type": "string"
+        },
+        Job.tag_start_date: {
             "type": "string",
             "format": "date"
         },
-        "end_date": {
+        Job.tag_end_date: {
             "type": "string",
             "format": "date"
         }
@@ -48,19 +51,23 @@ schema_job = {
     "additionalProperties": False
 }
 
+
 schema_employee = {
     "$schema": schema_type,
     "title": "Employee schema",
     "type": "object",
     "properties": {
-        "_id": {
-          "type": "string"
-        },
-        "current_role": {
+        tag_id: {
             "type": "string"
         },
-        "active": {
-          "type": "boolean"
+        Employee.tag_name: {
+            "type": "string"
+        },
+        Employee.tag_current_role: {
+            "type": "string"
+        },
+        Employee.tag_active: {
+            "type": "boolean"
         },
     },
     "additionalProperties": False
