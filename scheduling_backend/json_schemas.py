@@ -12,41 +12,11 @@ schema_client = {
         tag_id: {
             "type": "string"
         },
-        Client.tag_name: {
+        Client.Tag.NAME: {
             "type": "string"
         },
-        Client.tag_active: {
+        Client.Tag.ACTIVE: {
             "type": "boolean"
-        }
-    },
-    "additionalProperties": False
-}
-
-
-schema_job = {
-    "$schema": schema_type,
-    "title": "Job schema",
-    "type": "object",
-    "properties": {
-        tag_id: {
-            "type": "string"
-        },
-        Job.tag_client_id: {
-            "type": "string"
-        },
-        Job.tag_name: {
-            "type": "string"
-        },
-        Job.tag_location: {
-            "type": "string"
-        },
-        Job.tag_start_date: {
-            "type": "string",
-            "format": "date"
-        },
-        Job.tag_end_date: {
-            "type": "string",
-            "format": "date"
         }
     },
     "additionalProperties": False
@@ -61,15 +31,53 @@ schema_employee = {
         tag_id: {
             "type": "string"
         },
-        Employee.tag_name: {
+        Employee.Tag.NAME: {
             "type": "string"
         },
-        Employee.tag_current_role: {
+        Employee.Tag.CURRENT_ROLE: {
             "type": "string"
         },
-        Employee.tag_active: {
+        Employee.Tag.ACTIVE: {
             "type": "boolean"
         },
+    },
+    "additionalProperties": False
+}
+
+
+schema_job = {
+    "$schema": schema_type,
+    "title": "Job schema",
+    "type": "object",
+    "properties": {
+        tag_id: {
+            "type": "string"
+        },
+        Job.Tag.CLIENT_ID: {
+            "type": "string"
+        },
+        Job.Tag.NAME: {
+            "type": "string"
+        },
+        Job.Tag.LOCATION: {
+            "type": "string"
+        },
+        Job.Tag.START_DATE: {
+            "type": "string",
+            "format": "date"
+        },
+        Job.Tag.END_DATE: {
+            "type": "string",
+            "format": "date"
+        },
+        Job.Tag.SCHEDULED_START_TIME: {
+            "type": "string",
+            "format": "time"
+        },
+        Job.Tag.SCHEDULED_END_TIME: {
+            "type": "string",
+            "format": "time"
+        }
     },
     "additionalProperties": False
 }
@@ -84,21 +92,28 @@ schema_employee_shift = {
         tag_id: {
             "type": "string"
         },
-        EmployeeShift.tag_employee_id: {
+        EmployeeShift.Tag.EMPLOYEE_ID: {
             "type": "string"
         },
-        EmployeeShift.tag_actual_start_time: {
+        EmployeeShift.Tag.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        EmployeeShift.tag_actual_end_time: {
+        EmployeeShift.Tag.SCHEDULED_END_TIME: {
+            "type": "string",
+            "format": "time"
+        },
+        EmployeeShift.Tag.ACTUAL_START_TIME: {
+            "type": "string",
+            "format": "time"
+        },
+        EmployeeShift.Tag.ACTUAL_END_TIME: {
             "type": "string",
             "format": "time"
         }
     },
     "additionalProperties": False
 }
-
 
 schema_job_shift = {
     "$schema": schema_type,
@@ -109,22 +124,22 @@ schema_job_shift = {
         tag_id: {
             "type": "string"
         },
-        JobShift.tag_job_id: {
+        JobShift.Tag.JOB_ID: {
             "type": "string"
         },
-        JobShift.tag_job_date: {
+        JobShift.Tag.JOB_DATE: {
             "type": "string",
             "format": "date"
         },
-        JobShift.tag_scheduled_start_time: {
+        JobShift.Tag.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        JobShift.tag_scheduled_end_time: {
+        JobShift.Tag.SCHEDULED_END_TIME: {
             "type": "string",
             "format": "time"
         },
-        JobShift.tag_employee_shifts: {
+        JobShift.Tag.EMPLOYEE_SHIFTS: {
             "type": "array",
             "uniqueItems": True,
             "items": {
@@ -139,24 +154,31 @@ schema_job_shift = {
 }
 
 if __name__ == "__main__":
+    # todo delete this later!!!
+
     emp_shift1 = {
-        EmployeeShift.tag_employee_id: "44",
-        EmployeeShift.tag_actual_start_time: "08:00:00",
-        EmployeeShift.tag_actual_end_time: "17:00:00"
+        EmployeeShift.Tag.EMPLOYEE_ID: "44",
+        EmployeeShift.Tag.SCHEDULED_START_TIME: "08:00:00",
+        EmployeeShift.Tag.SCHEDULED_END_TIME: "17:00:00"
     }
 
     emp_shift2 = {
-        EmployeeShift.tag_employee_id: "33",
-        EmployeeShift.tag_actual_start_time: "10:00:00",
-        EmployeeShift.tag_actual_end_time: "19:00:00"
+        EmployeeShift.Tag.EMPLOYEE_ID: "33",
+        EmployeeShift.Tag.SCHEDULED_START_TIME: "10:00:00",
+        EmployeeShift.Tag.SCHEDULED_END_TIME: "19:00:00",
+
+        EmployeeShift.Tag.ACTUAL_START_TIME: "08:00:00",
+        EmployeeShift.Tag.ACTUAL_END_TIME: "17:00:00"
+
+
     }
 
     _job_shift = {
-        JobShift.tag_job_id: "abc",
-        JobShift.tag_scheduled_end_time: "08:00:00",
-        JobShift.tag_scheduled_end_time: "18:00:00",
-        JobShift.tag_employee_shifts: [emp_shift1, emp_shift2]
-        # JobShift.tag_employee_shifts: ["vikram", "singh"]
+        JobShift.Tag.JOB_ID: "abc",
+        JobShift.Tag.SCHEDULED_END_TIME: "08:00:00",
+        JobShift.Tag.SCHEDULED_END_TIME: "18:00:00",
+        JobShift.Tag.EMPLOYEE_SHIFTS: [emp_shift1, emp_shift2]
+        # JobShift.Tag.employee_shifts: ["vikram", "singh"]
     }
 
     import jsonschema

@@ -17,8 +17,8 @@ class JobHandler(BaseHandler):
         super(JobHandler, self).__init__(schema_job)
 
     def preprocess_data(self, data):
-        start_date = data.get(Job.tag_start_date, None)
-        end_date = data.get(Job.tag_end_date, None)
+        start_date = data.get(Job.Tag.START_DATE, None)
+        end_date = data.get(Job.Tag.END_DATE, None)
 
         for d in [start_date, end_date]:
             self.error = DateUtils.validate(d, DateUtils.DATE)

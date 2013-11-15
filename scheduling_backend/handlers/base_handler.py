@@ -44,9 +44,12 @@ class BaseHandler(Resource):
 
 
     def preprocess_data(self, data):
-        msg = "Subclasses of Basehandler should implement valid_data"
+        msg = "Subclasses of Basehandler should implement preprocess_data"
         raise NotImplementedError(msg)
 
 
     def put(self):
-        return {"error": "use patch instead, and only send fields which have changed"}
+        return {
+            "error":
+                "use patch instead, and only send fields which have changed"
+        }
