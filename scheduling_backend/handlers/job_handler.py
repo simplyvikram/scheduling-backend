@@ -9,7 +9,7 @@ from flask import current_app as current_app
 from scheduling_backend.utils import (
     DateUtils,
 )
-from scheduling_backend.models import Job, JobShift, tag_id
+from scheduling_backend.models import Job, JobShift, field_id
 from scheduling_backend.handlers import common_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
@@ -36,16 +36,16 @@ class JobHandler(BaseHandler):
         if self.error:
             return
 
-        self.validate_str_field(Job.Tag.LOCATION, False)
-        self.validate_str_field(Job.Tag.NAME, False)
+        self.validate_str_field(Job.Fields.LOCATION, False)
+        self.validate_str_field(Job.Fields.NAME, False)
 
-        self.validate_str_as_object_id_field(Job.Tag.CLIENT_ID, False)
+        self.validate_str_as_object_id_field(Job.Fields.CLIENT_ID, False)
 
-        self.validate_date_time_field(Job.Tag.START_DATE, DateUtils.DATE, False)
-        self.validate_date_time_field(Job.Tag.END_DATE, DateUtils.DATE, False)
-        self.validate_date_time_field(Job.Tag.SCHEDULED_START_TIME,
+        self.validate_date_time_field(Job.Fields.START_DATE, DateUtils.DATE, False)
+        self.validate_date_time_field(Job.Fields.END_DATE, DateUtils.DATE, False)
+        self.validate_date_time_field(Job.Fields.SCHEDULED_START_TIME,
                                       DateUtils.TIME, False)
-        self.validate_date_time_field(Job.Tag.SCHEDULED_END_TIME,
+        self.validate_date_time_field(Job.Fields.SCHEDULED_END_TIME,
                                       DateUtils.TIME, False)
 
         if self.error:
@@ -57,14 +57,14 @@ class JobHandler(BaseHandler):
         if self.error:
             return
 
-        client_id = self.data.get(Job.Tag.CLIENT_ID, None)
-        name = self.data.get(Job.Tag.NAME, None)
-        location = self.data.get(Job.Tag.LOCATION, None)
+        client_id = self.data.get(Job.Fields.CLIENT_ID, None)
+        name = self.data.get(Job.Fields.NAME, None)
+        location = self.data.get(Job.Fields.LOCATION, None)
 
-        start_date = self.data.get(Job.Tag.START_DATE, None)
-        end_date = self.data.get(Job.Tag.END_DATE, None)
-        scheduled_start_time = self.data.get(Job.Tag.SCHEDULED_START_TIME, None)
-        scheduled_end_time = self.data.get(Job.Tag.SCHEDULED_END_TIME, None)
+        start_date = self.data.get(Job.Fields.START_DATE, None)
+        end_date = self.data.get(Job.Fields.END_DATE, None)
+        scheduled_start_time = self.data.get(Job.Fields.SCHEDULED_START_TIME, None)
+        scheduled_end_time = self.data.get(Job.Fields.SCHEDULED_END_TIME, None)
 
         l = [client_id, name, location,
              start_date, end_date,
@@ -108,7 +108,7 @@ class JobHandler(BaseHandler):
         job_id = current_app.db.jobs.insert(self.data)
         job = current_app.db.jobs.find_one({"_id": job_id})
 
-        # job_id = job.get(tag_id, None)
+        # job_id = job.get(field_id, None)
 
         # todo create the jobshifts
 

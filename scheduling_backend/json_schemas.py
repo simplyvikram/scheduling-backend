@@ -1,7 +1,7 @@
 
 schema_type = "http://json-schema.org/draft-04/schema#"
 
-from models import tag_id, Client, Employee, EmployeeShift, Job, JobShift
+from models import field_id, Client, Employee, EmployeeShift, Job, JobShift
 
 
 schema_client = {
@@ -9,13 +9,13 @@ schema_client = {
     "title": "Client schema",
     "type": "object",
     "properties": {
-        tag_id: {
+        field_id: {
             "type": "string"
         },
-        Client.Tag.NAME: {
+        Client.Fields.NAME: {
             "type": "string"
         },
-        Client.Tag.ACTIVE: {
+        Client.Fields.ACTIVE: {
             "type": "boolean"
         }
     },
@@ -28,16 +28,16 @@ schema_employee = {
     "title": "Employee schema",
     "type": "object",
     "properties": {
-        tag_id: {
+        field_id: {
             "type": "string"
         },
-        Employee.Tag.NAME: {
+        Employee.Fields.NAME: {
             "type": "string"
         },
-        Employee.Tag.CURRENT_ROLE: {
+        Employee.Fields.CURRENT_ROLE: {
             "type": "string"
         },
-        Employee.Tag.ACTIVE: {
+        Employee.Fields.ACTIVE: {
             "type": "boolean"
         },
     },
@@ -51,31 +51,31 @@ schema_job = {
     "type": "object",
     "properties": {
 
-        tag_id: {
+        field_id: {
             "type": "string"
         },
-        Job.Tag.CLIENT_ID: {
+        Job.Fields.CLIENT_ID: {
             "type": "string"
         },
-        Job.Tag.NAME: {
+        Job.Fields.NAME: {
             "type": "string"
         },
-        Job.Tag.LOCATION: {
+        Job.Fields.LOCATION: {
             "type": "string"
         },
-        Job.Tag.START_DATE: {
+        Job.Fields.START_DATE: {
             "type": "string",
             "format": "date"
         },
-        Job.Tag.END_DATE: {
+        Job.Fields.END_DATE: {
             "type": "string",
             "format": "date"
         },
-        Job.Tag.SCHEDULED_START_TIME: {
+        Job.Fields.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        Job.Tag.SCHEDULED_END_TIME: {
+        Job.Fields.SCHEDULED_END_TIME: {
             "type": "string",
             "format": "time"
         }
@@ -90,25 +90,25 @@ schema_employee_shift = {
     "type": "object",
     "properties": {
 
-        tag_id: {
+        field_id: {
             "type": "string"
         },
-        EmployeeShift.Tag.EMPLOYEE_ID: {
+        EmployeeShift.Fields.EMPLOYEE_ID: {
             "type": "string"
         },
-        EmployeeShift.Tag.SCHEDULED_START_TIME: {
+        EmployeeShift.Fields.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        EmployeeShift.Tag.SCHEDULED_END_TIME: {
+        EmployeeShift.Fields.SCHEDULED_END_TIME: {
             "type": "string",
             "format": "time"
         },
-        EmployeeShift.Tag.ACTUAL_START_TIME: {
+        EmployeeShift.Fields.ACTUAL_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        EmployeeShift.Tag.ACTUAL_END_TIME: {
+        EmployeeShift.Fields.ACTUAL_END_TIME: {
             "type": "string",
             "format": "time"
         }
@@ -122,25 +122,25 @@ schema_job_shift = {
     "type": "object",
     "properties": {
 
-        tag_id: {
+        field_id: {
             "type": "string"
         },
-        JobShift.Tag.JOB_ID: {
+        JobShift.Fields.JOB_ID: {
             "type": "string"
         },
-        JobShift.Tag.JOB_DATE: {
+        JobShift.Fields.JOB_DATE: {
             "type": "string",
             "format": "date"
         },
-        JobShift.Tag.SCHEDULED_START_TIME: {
+        JobShift.Fields.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"
         },
-        JobShift.Tag.SCHEDULED_END_TIME: {
+        JobShift.Fields.SCHEDULED_END_TIME: {
             "type": "string",
             "format": "time"
         },
-        JobShift.Tag.EMPLOYEE_SHIFTS: {
+        JobShift.Fields.EMPLOYEE_SHIFTS: {
             "type": "array",
             "uniqueItems": True,
             "items": {
@@ -159,27 +159,27 @@ if __name__ == "__main__":
     # todo delete this later!!!
 
     emp_shift1 = {
-        EmployeeShift.Tag.EMPLOYEE_ID: "44",
-        EmployeeShift.Tag.SCHEDULED_START_TIME: "08:00:00",
-        EmployeeShift.Tag.SCHEDULED_END_TIME: "17:00:00"
+        EmployeeShift.Fields.EMPLOYEE_ID: "44",
+        EmployeeShift.Fields.SCHEDULED_START_TIME: "08:00:00",
+        EmployeeShift.Fields.SCHEDULED_END_TIME: "17:00:00"
     }
 
     emp_shift2 = {
-        EmployeeShift.Tag.EMPLOYEE_ID: "33",
-        EmployeeShift.Tag.SCHEDULED_START_TIME: "10:00:00",
-        EmployeeShift.Tag.SCHEDULED_END_TIME: "19:00:00",
+        EmployeeShift.Fields.EMPLOYEE_ID: "33",
+        EmployeeShift.Fields.SCHEDULED_START_TIME: "10:00:00",
+        EmployeeShift.Fields.SCHEDULED_END_TIME: "19:00:00",
 
-        EmployeeShift.Tag.ACTUAL_START_TIME: "08:00:00",
-        EmployeeShift.Tag.ACTUAL_END_TIME: "17:00:00"
+        EmployeeShift.Fields.ACTUAL_START_TIME: "08:00:00",
+        EmployeeShift.Fields.ACTUAL_END_TIME: "17:00:00"
     }
 
     _job_shift = {
-        JobShift.Tag.JOB_ID: "abc",
-        JobShift.Tag.SCHEDULED_END_TIME: "08:00:00",
-        JobShift.Tag.SCHEDULED_END_TIME: "18:00:00",
+        JobShift.Fields.JOB_ID: "abc",
+        JobShift.Fields.SCHEDULED_END_TIME: "08:00:00",
+        JobShift.Fields.SCHEDULED_END_TIME: "18:00:00",
 
-        JobShift.Tag.EMPLOYEE_SHIFTS: [emp_shift1, emp_shift2]
-        # JobShift.Tag.EMPLOYEE_SHIFTS: ["vikram", "singh"]
+        JobShift.Fields.EMPLOYEE_SHIFTS: [emp_shift1, emp_shift2]
+        # JobShift.Fields.EMPLOYEE_SHIFTS: ["vikram", "singh"]
     }
 
     import jsonschema

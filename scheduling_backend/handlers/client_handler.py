@@ -32,11 +32,11 @@ class ClientHandler(BaseHandler):
         if self.error:
             return
 
-        self.validate_str_field(Client.Tag.NAME, False)
-        self.validate_field_existence(Client.Tag.ACTIVE, False)
+        self.validate_str_field(Client.Fields.NAME, False)
+        self.validate_field_existence(Client.Fields.ACTIVE, False)
 
         # Additional check for duplicate name
-        name = self.data.get(Client.Tag.NAME, None)
+        name = self.data.get(Client.Fields.NAME, None)
         if name is not None:
             is_name_duplicate = self._check_client_name_in_database(name)
             if is_name_duplicate:
@@ -49,8 +49,8 @@ class ClientHandler(BaseHandler):
         if self.error:
             return
 
-        name = self.data.get(Client.Tag.NAME, None)
-        active = self.data.get(Client.Tag.ACTIVE, None)
+        name = self.data.get(Client.Fields.NAME, None)
+        active = self.data.get(Client.Fields.ACTIVE, None)
 
         l = [name, active]
 
@@ -66,7 +66,7 @@ class ClientHandler(BaseHandler):
     def _check_client_name_in_database(self, client_name):
 
         matching_client_count = \
-            current_app.db.clients.find({Client.Tag.NAME: client_name}).count()
+            current_app.db.clients.find({Client.Fields.NAME: client_name}).count()
 
         if matching_client_count > 0:
             return True

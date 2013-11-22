@@ -1,11 +1,11 @@
 
-tag_id = "_id"
-# class Tag(object):
+field_id = "_id"
+# class Fields(object):
 
 
 class Client(object):
 
-    class Tag(object):
+    class Fields(object):
         NAME = "name"
         ACTIVE = "active"
 
@@ -18,18 +18,18 @@ class Client(object):
     @classmethod
     def encode(cls, client):
         d = {
-            Client.Tag.NAME: client.name,
-            Client.Tag.ACTIVE: client.active
+            Client.Fields.NAME: client.name,
+            Client.Fields.ACTIVE: client.active
         }
         if client._id:
-            d[tag_id] = client._id
+            d[field_id] = client._id
 
         return d
 
 
 class Employee(object):
 
-    class Tag(object):
+    class Fields(object):
         NAME = "name"
         CURRENT_ROLE = "current_role"
         ACTIVE = "active"
@@ -45,12 +45,12 @@ class Employee(object):
     @classmethod
     def encode(cls, employee):
         d = {
-            Employee.Tag.NAME: employee.name,
-            Employee.Tag.CURRENT_ROLE: employee.current_role,
-            Employee.Tag.ACTIVE: employee.active
+            Employee.Fields.NAME: employee.name,
+            Employee.Fields.CURRENT_ROLE: employee.current_role,
+            Employee.Fields.ACTIVE: employee.active
         }
         if employee._id:
-            d[tag_id] = employee._id
+            d[field_id] = employee._id
 
         return d
 
@@ -62,7 +62,7 @@ class Employee(object):
 
 class Job(object):
 
-    class Tag(object):
+    class Fields(object):
         CLIENT_ID = "client_id"
         NAME = "name"
         LOCATION = "location"
@@ -98,25 +98,25 @@ class Job(object):
     @classmethod
     def encode(cls, job):
         d = {
-            Job.Tag.CLIENT_ID: job.client_id,
-            Job.Tag.NAME: job.name,
-            Job.Tag.LOCATION: job.location,
+            Job.Fields.CLIENT_ID: job.client_id,
+            Job.Fields.NAME: job.name,
+            Job.Fields.LOCATION: job.location,
 
-            Job.Tag.START_DATE: job.start_date,
-            Job.Tag.END_DATE: job.end_date,
+            Job.Fields.START_DATE: job.start_date,
+            Job.Fields.END_DATE: job.end_date,
 
-            Job.Tag.SCHEDULED_START_TIME: job.scheduled_start_time,
-            Job.Tag.SCHEDULED_END_TIME: job.scheduled_end_time
+            Job.Fields.SCHEDULED_START_TIME: job.scheduled_start_time,
+            Job.Fields.SCHEDULED_END_TIME: job.scheduled_end_time
         }
         if job._id:
-            d[tag_id] = job._id
+            d[field_id] = job._id
 
         return d
 
 
 class EmployeeShift(object):
 
-    class Tag(object):
+    class Fields(object):
 
         EMPLOYEE_ID = "employee_id"
 
@@ -148,30 +148,30 @@ class EmployeeShift(object):
     @classmethod
     def encode(cls, employee_shift):
         d = {
-            EmployeeShift.Tag.EMPLOYEE_ID: employee_shift.employee_id,
+            EmployeeShift.Fields.EMPLOYEE_ID: employee_shift.employee_id,
 
-            EmployeeShift.Tag.SCHEDULED_START_TIME:
+            EmployeeShift.Fields.SCHEDULED_START_TIME:
                 employee_shift.scheduled_start_time,
 
-            EmployeeShift.Tag.SCHEDULED_END_TIME:
+            EmployeeShift.Fields.SCHEDULED_END_TIME:
                 employee_shift.scheduled_end_time,
 
-            EmployeeShift.Tag.ACTUAL_START_TIME:
+            EmployeeShift.Fields.ACTUAL_START_TIME:
                 employee_shift.actual_start_time,
 
-            EmployeeShift.Tag.ACTUAL_END_TIME:
+            EmployeeShift.Fields.ACTUAL_END_TIME:
                 employee_shift.actual_end_time
         }
 
         if employee_shift._id:
-            d[tag_id] = employee_shift._id
+            d[field_id] = employee_shift._id
 
         return d
 
 
 class JobShift(object):
 
-    class Tag(object):
+    class Fields(object):
         JOB_ID = "job_id"
         JOB_DATE = "job_date"
 
@@ -203,14 +203,14 @@ class JobShift(object):
     @classmethod
     def encode(cls, job_shift):
         d = {
-            JobShift.Tag.JOB_ID: job_shift.job_id,
-            JobShift.Tag.JOB_DATE: job_shift.job_date,
+            JobShift.Fields.JOB_ID: job_shift.job_id,
+            JobShift.Fields.JOB_DATE: job_shift.job_date,
 
-            JobShift.Tag.SCHEDULED_START_TIME: job_shift.scheduled_start_time,
-            JobShift.Tag.SCHEDULED_END_TIME: job_shift.scheduled_end_time
+            JobShift.Fields.SCHEDULED_START_TIME: job_shift.scheduled_start_time,
+            JobShift.Fields.SCHEDULED_END_TIME: job_shift.scheduled_end_time
         }
         if job_shift._id:
-            d[tag_id] = job_shift._id
+            d[field_id] = job_shift._id
 
         if not job_shift.employee_shifts:
             # If employee_shifts is none or empty
@@ -220,7 +220,7 @@ class JobShift(object):
         _list = map(lambda emp_shift: EmployeeShift.encode(emp_shift),
                 job_shift.employee_shifts)
 
-        d[JobShift.Tag.EMPLOYEE_SHIFTS] = _list
+        d[JobShift.Fields.EMPLOYEE_SHIFTS] = _list
 
         return d
 

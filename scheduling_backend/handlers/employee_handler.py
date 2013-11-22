@@ -30,14 +30,14 @@ class EmployeeHandler(BaseHandler):
         if self.error:
             return
 
-        self.validate_str_field(Employee.Tag.NAME, False)
-        self.validate_str_field(Employee.Tag.CURRENT_ROLE, False)
+        self.validate_str_field(Employee.Fields.NAME, False)
+        self.validate_str_field(Employee.Fields.CURRENT_ROLE, False)
 
         if self.error:
             return
 
         # Additional check for duplicate names
-        name = self.data.get(Employee.Tag.NAME, None)
+        name = self.data.get(Employee.Fields.NAME, None)
         if name is not None:
             is_name_duplicate = self._check_employee_name_in_database(name)
             if is_name_duplicate:
@@ -48,7 +48,7 @@ class EmployeeHandler(BaseHandler):
 
         # Additional check to make sure current role is in the
         #     list of allowed roles
-        current_role = self.data.get(Employee.Tag.CURRENT_ROLE, None)
+        current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
         if current_role is not None:
             if current_role not in Employee.allowed_roles():
                 self.error = {
@@ -63,9 +63,9 @@ class EmployeeHandler(BaseHandler):
         if self.error:
             return
 
-        name = self.data.get(Employee.Tag.NAME, None)
-        current_role = self.data.get(Employee.Tag.NAME, None)
-        active = self.data.get(Employee.Tag.ACTIVE, None)
+        name = self.data.get(Employee.Fields.NAME, None)
+        current_role = self.data.get(Employee.Fields.NAME, None)
+        active = self.data.get(Employee.Fields.ACTIVE, None)
 
         l = [name, current_role, active]
 
@@ -81,7 +81,7 @@ class EmployeeHandler(BaseHandler):
     def _check_employee_name_in_database(self, emp_name):
 
         matching_emp_count = \
-            current_app.db.employees.find({Employee.Tag.NAME: emp_name}).count()
+            current_app.db.employees.find({Employee.Fields.NAME: emp_name}).count()
 
         if matching_emp_count > 0:
             return True
