@@ -56,7 +56,8 @@ class Employee(object):
 
     @classmethod
     def allowed_roles(cls):
-        return ['plumber', 'worker', 'carpenter', 'fitter']
+        return ['plumber', 'worker', 'carpenter',
+                'fitter', 'the boss']
 
 
 class Job(object):
@@ -68,16 +69,17 @@ class Job(object):
 
         START_DATE = "start_date"
         END_DATE = "end_date"
+
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
-
 
     DEFAULT_START_TIME = "08:00:00"
     DEFAULT_END_TIME = "05:00:00"
 
     def __init__(self,
                  client_id, name, location,
-                 start_date, end_date,
+                 start_date,
+                 end_date,
                  scheduled_start_time=DEFAULT_START_TIME,
                  scheduled_end_time=DEFAULT_END_TIME):
 
@@ -118,16 +120,6 @@ class EmployeeShift(object):
 
         EMPLOYEE_ID = "employee_id"
 
-        # todo do we need job shift id if the employee shift is part of job shift?
-        # job_shift_id = "job_shift_id"
-
-        # todo ask shaheen if we need this?
-        # todo especially if we employee shifts are inside jobshifts
-        # todo edit 1 - we need scheduled times as an employee may be scheduled
-        # todo          to start early or late for personal reasons
-
-        # These field are optional fields, if absent use the scheduled start
-        # and end times from job shifts
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
 
@@ -135,18 +127,17 @@ class EmployeeShift(object):
         ACTUAL_END_TIME = "actual_end_time"
 
     def __init__(self, employee_id,
-                 scheduled_start_time=None,
-                 scheduled_end_time=None,
+                 scheduled_start_time,
+                 scheduled_end_time,
                  actual_start_time=None,
                  actual_end_time=None):
         """
         Use actual start/end times for all calculations. If they are
         absent use the scheduled start/end times for the calculations.
-        If that's absent as well, use the scheduled start/end
-        times from the job.
         """
         # todo ask shaheen about above
         self.employee_id = employee_id
+
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
         self.actual_start_time = actual_start_time
@@ -161,6 +152,7 @@ class EmployeeShift(object):
 
             EmployeeShift.Tag.SCHEDULED_START_TIME:
                 employee_shift.scheduled_start_time,
+
             EmployeeShift.Tag.SCHEDULED_END_TIME:
                 employee_shift.scheduled_end_time,
 
@@ -182,6 +174,7 @@ class JobShift(object):
     class Tag(object):
         JOB_ID = "job_id"
         JOB_DATE = "job_date"
+
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
 
@@ -199,6 +192,7 @@ class JobShift(object):
 
         self.job_id = job_id
         self.job_date = job_date
+
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
 
@@ -211,6 +205,7 @@ class JobShift(object):
         d = {
             JobShift.Tag.JOB_ID: job_shift.job_id,
             JobShift.Tag.JOB_DATE: job_shift.job_date,
+
             JobShift.Tag.SCHEDULED_START_TIME: job_shift.scheduled_start_time,
             JobShift.Tag.SCHEDULED_END_TIME: job_shift.scheduled_end_time
         }
@@ -218,6 +213,7 @@ class JobShift(object):
             d[tag_id] = job_shift._id
 
         if not job_shift.employee_shifts:
+            # If employee_shifts is none or empty
             job_shift.employee_shifts = []
 
 
@@ -227,3 +223,4 @@ class JobShift(object):
         d[JobShift.Tag.EMPLOYEE_SHIFTS] = _list
 
         return d
+

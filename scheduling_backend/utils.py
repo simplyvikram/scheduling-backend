@@ -1,7 +1,7 @@
 
 
 from bson.objectid import ObjectId, InvalidId
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 import json
 
 import jsonschema
@@ -82,7 +82,6 @@ class DateUtils(object):
         DATETIME: _date_format + "T" + _time_format
     }
 
-
     @staticmethod
     def validate(datetime_str, type_of_datetime):
         """
@@ -105,10 +104,37 @@ class DateUtils(object):
                                           DateUtils.FORMATS[type_of_datetime])
         except Exception as e:
 
-            error = {"error": str(e),
-                     "message": "Date/Time/Datetime is not in the right format"}
+            error = {"error": str(e)}
             print "Exception - ", error
             return error
+
+    @staticmethod
+    def get_dates_in_range(start_date_str,
+                           end_date_str,
+                           include_saturday=False,
+                           include_sunday=False):
+
+        date_format = DateUtils.FORMATS[DateUtils.DATE]
+
+        _d = datetime.strptime(start_date_str, date_format)
+        current_date = date(year=_d.year, month=_d.month, day=_d.day)
+
+        _d = datetime.strptime(end_date_str, date_format)
+        end_date = date(year=_d.year, month=_d.month, day=_d.day)
+
+        dates = []
+        while (end_date - current_date).total_seconds() >= 0:
+            if (
+                    (current_date.isoweekday() in range(1, 6)) or
+                    (current_date.isoweekday() == 6 and include_saturday) or
+                    (current_date.isoweekday() == 7 and include_sunday)
+            ):
+
+                dates.append(current_date)
+
+            current_date = current_date + timedelta(days=1)
+
+        return dates
 
 
 class ObjectIdUtils(object):
@@ -118,5 +144,22 @@ class ObjectIdUtils(object):
         try:
             ObjectId(str_id)
             return True
-        except InvalidId:
+        except (InvalidId, ValueError, TypeError) as e:
             return False
+
+
+
+
+
+# if __name__ == '__main__':
+#     print "testing date time"
+#
+#     start_date_str = "2013-11-02"
+#     end_date_str = "2013-11-22"
+#
+#     dates = DateUtils.get_dates_in_range(start_date_str, end_date_str,
+#                                          include_saturday=False,
+#                                          include_sunday=False)
+#
+#     for date in dates:
+#         print date

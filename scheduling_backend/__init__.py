@@ -76,9 +76,11 @@ def register_views(app):
     from handlers.job_handler import JobHandler
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
+    from handlers.jobshift_handler import JobShiftHandler
     from handlers import RoleHandler
 
     api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
+    api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>/jobshifts', endpoint="job_jobshifts")
     api.add_resource(JobHandler, '/jobs', endpoint="jobs")
 
 
@@ -90,6 +92,46 @@ def register_views(app):
     api.add_resource(EmployeeHandler, '/employees/<ObjectId:obj_id>',
                      endpoint="employee")
     api.add_resource(EmployeeHandler, '/employees', endpoint="employees")
+
+
+    # Get a job
+    # Modify a job
+    # job_url = 'jobs/<ObjectId:job_id>'
+    #
+    #
+    # get_job_shifts_url = 'jobs/<ObjectId:job_id>/jobshifts'
+    # get_job_shift_url = 'jobshifts/<ObjectId:job_shift_id>'
+    #
+    # # modify the job_shift
+    # patch_job_shift_url = 'jobshifts/<ObjectId:job_shift_id>'
+    #
+    #
+    # # Post with no data, returns created Employee Shift
+    # post_add_employee_url = 'jobshifts/<ObjectId:job_shift_id>/employee/<ObjectId:employee_id>'
+    #
+    # # Deletes the employee shift, and removes it from the job shift
+    # delete_delete_employeeshift = 'employeeshifts/<ObjectId:employee_shift_id>'
+    #
+    # # Patch with the changed employee shift data, returns modified employeeshift
+    # patch_modify_employeeshift = 'employeeshifts/<ObjectId:employee_shift_id>'
+    #
+    # #
+    # post_copy_job_shifts = 'jobshift/<ObjectId:job_shift_id>/copy'
+    # post_copy_job_shifts_params = '?' + 'fromdate' + '=XXXX' + '&' + 'todate' + '=YYY'
+
+
+
+
+
+
+
+
+    # api.add_resource(JobShiftHandler, '/jobshifts/<ObjectId:job_shift_id>',
+    #                  endpoint="jobshift")
+    #
+    # api.add_resource(JobShiftHandler, '/jobshifts/addemployeeshift',
+    #                  endpoint="addemployeeshift")
+
 
 
     api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')

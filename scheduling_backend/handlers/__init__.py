@@ -10,6 +10,31 @@ class MessageDict(object):
     request_not_in_json = {"Error": "Request is not in valid json format"}
 
 
+def common_handler(func):
+
+    @exception_handler
+    @object_id_handler
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def exception_handler(func):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            resp = func(*args, **kwargs)
+            return resp
+        except Exception as e:
+            print "The following error occurred: ", e
+            return {"error": str(e)}
+
+    return wrapper
+
+
 def object_id_handler(func):
     """
     Decorator for get/post/put/patch as we want the object ids in string
@@ -35,6 +60,7 @@ def object_id_handler(func):
 
         resp = JsonUtils.change_obj_ids_to_str_ids(resp)
         return resp
+
 
     return wrapper
 

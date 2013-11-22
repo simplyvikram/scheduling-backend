@@ -50,6 +50,7 @@ schema_job = {
     "title": "Job schema",
     "type": "object",
     "properties": {
+
         tag_id: {
             "type": "string"
         },
@@ -150,7 +151,8 @@ schema_job_shift = {
             }
 
         }
-    }
+    },
+    "additionalProperties": False
 }
 
 if __name__ == "__main__":
@@ -169,16 +171,15 @@ if __name__ == "__main__":
 
         EmployeeShift.Tag.ACTUAL_START_TIME: "08:00:00",
         EmployeeShift.Tag.ACTUAL_END_TIME: "17:00:00"
-
-
     }
 
     _job_shift = {
         JobShift.Tag.JOB_ID: "abc",
         JobShift.Tag.SCHEDULED_END_TIME: "08:00:00",
         JobShift.Tag.SCHEDULED_END_TIME: "18:00:00",
+
         JobShift.Tag.EMPLOYEE_SHIFTS: [emp_shift1, emp_shift2]
-        # JobShift.Tag.employee_shifts: ["vikram", "singh"]
+        # JobShift.Tag.EMPLOYEE_SHIFTS: ["vikram", "singh"]
     }
 
     import jsonschema
