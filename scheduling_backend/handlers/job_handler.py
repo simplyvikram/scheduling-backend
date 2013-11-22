@@ -41,8 +41,11 @@ class JobHandler(BaseHandler):
 
         self.validate_str_as_object_id_field(Job.Fields.CLIENT_ID, False)
 
-        self.validate_date_time_field(Job.Fields.START_DATE, DateUtils.DATE, False)
-        self.validate_date_time_field(Job.Fields.END_DATE, DateUtils.DATE, False)
+        self.validate_date_time_field(Job.Fields.START_DATE,
+                                      DateUtils.DATE, False)
+        self.validate_date_time_field(Job.Fields.END_DATE,
+                                      DateUtils.DATE, False)
+
         self.validate_date_time_field(Job.Fields.SCHEDULED_START_TIME,
                                       DateUtils.TIME, False)
         self.validate_date_time_field(Job.Fields.SCHEDULED_END_TIME,
@@ -82,9 +85,9 @@ class JobHandler(BaseHandler):
     def get(self, job_id=None):
 
         # Find the job shifts associated with this job
-        lastfield = urlparse.urlparse(request.base_url).path.split('/')[-1]
-        if lastfield == 'jobshifts':
-            return self._find_job_fields(job_id)
+        # lastfield = urlparse.urlparse(request.base_url).path.split('/')[-1]
+        # if lastfield == 'jobshifts':
+        #     return self._find_job_fields(job_id)
 
         if job_id:
             # Find the job with the matching _id

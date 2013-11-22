@@ -77,12 +77,8 @@ def register_views(app):
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
     from handlers.jobshift_handler import JobShiftHandler
+    from handlers.employeeshift_handler import EmployeeShiftHandler
     from handlers import RoleHandler
-
-    api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
-    api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>/jobshifts', endpoint="job_jobshifts")
-    api.add_resource(JobHandler, '/jobs', endpoint="jobs")
-
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
                      endpoint="client")
@@ -94,43 +90,51 @@ def register_views(app):
     api.add_resource(EmployeeHandler, '/employees', endpoint="employees")
 
 
-    # Get a job
-    # Modify a job
-    # job_url = 'jobs/<ObjectId:job_id>'
+    # for jobs, include a parameter to include jobshifts, jobshifts_ids/jobshifts
+    api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
+    api.add_resource(JobHandler, '/jobs', endpoint="jobs")
+
+
+
+    # GET
+    # DELETE, delete would also delete associated employee shifts
+    # No POST, jobshifts are created while creating/changing jobs
+    # PATCH would change a job shift
+    api.add_resource(JobShiftHandler,
+                     '/jobshifts/<ObjectId:jobshift_id>',
+                     endpoint="jobshift")
+    api.add_resource(JobShiftHandler,
+                     '/jobshifts',
+                     endpoint="jobsshifts")
+
+    # # # POST with no data, returns created Employee Shift
+    # api.add_resource('/jobshifts/<ObjectId:job_shift_id>'
+    #                  '/employee/<ObjectId:employee_id>',
+    #                  endpoint="createemployeeshift")
+
+
+    # GET, employee shifts have post
+    # PATCH, return modified employee shift
+    # DELETE, removes employeeshift from jobshift
+    api.add_resource(EmployeeShiftHandler,
+                     '/employeeshifts/<ObjectId:employee_shift_id>',
+                     endpoint="employeeshift")
+
+
+    # POST with no data to create an employeeshift todo maybe a new handler
+    api.add_resource(JobShiftHandler,
+                     '/addemployeeshift'
+                     '/jobshifts/<ObjectId:jobshift_id>'
+                     '/employee/<ObjectId:employee_id>',
+
+                     endpoint="create_employee_shift")
+
+    # todo finish url for copy job shifts
+    # api.add_resource(JobShiftHandler,
+    #                  '/copyjobshift/<ObjectId:jobshift_id')
     #
-    #
-    # get_job_shifts_url = 'jobs/<ObjectId:job_id>/jobshifts'
-    # get_job_shift_url = 'jobshifts/<ObjectId:job_shift_id>'
-    #
-    # # modify the job_shift
-    # patch_job_shift_url = 'jobshifts/<ObjectId:job_shift_id>'
-    #
-    #
-    # # Post with no data, returns created Employee Shift
-    # post_add_employee_url = 'jobshifts/<ObjectId:job_shift_id>/employee/<ObjectId:employee_id>'
-    #
-    # # Deletes the employee shift, and removes it from the job shift
-    # delete_delete_employeeshift = 'employeeshifts/<ObjectId:employee_shift_id>'
-    #
-    # # Patch with the changed employee shift data, returns modified employeeshift
-    # patch_modify_employeeshift = 'employeeshifts/<ObjectId:employee_shift_id>'
-    #
-    # #
-    # post_copy_job_shifts = 'jobshift/<ObjectId:job_shift_id>/copy'
+    # post_copy_job_shifts = 'jobshift/<ObjectId:jobshift_id>/copy'
     # post_copy_job_shifts_params = '?' + 'fromdate' + '=XXXX' + '&' + 'todate' + '=YYY'
-
-
-
-
-
-
-
-
-    # api.add_resource(JobShiftHandler, '/jobshifts/<ObjectId:job_shift_id>',
-    #                  endpoint="jobshift")
-    #
-    # api.add_resource(JobShiftHandler, '/jobshifts/addemployeeshift',
-    #                  endpoint="addemployeeshift")
 
 
 
