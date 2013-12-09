@@ -5,7 +5,7 @@ from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employee
-from scheduling_backend.models import Employee
+from scheduling_backend.models import BaseModel, Employee
 
 
 class EmployeeHandler(BaseHandler):
@@ -53,10 +53,13 @@ class EmployeeHandler(BaseHandler):
             raise UserException("Duplicate employee name, choose another name")
 
 
+    @marshaling_handler
     def get(self, obj_id=None):
 
         if obj_id:
-            employee = current_app.db.employees.find_one({"_id": obj_id})
+            employee = current_app.db.employees.find_one(
+                {BaseModel.Fields._ID: obj_id}
+            )
             if employee is None:
                 return {}
 
@@ -76,7 +79,9 @@ class EmployeeHandler(BaseHandler):
 
         obj_id = current_app.db.employees.insert(employee_dict)
         # todo can the data have an array of employees to be inserted????
-        employee_dict = current_app.db.employees.find_one({"_id": obj_id})
+        employee_dict = current_app.db.employees.find_one(
+            {BaseModel.Fields._ID: obj_id}
+        )
 
         return employee_dict
 
@@ -86,15 +91,21 @@ class EmployeeHandler(BaseHandler):
 
         _dict = self.data
 
-        current_app.db.employees.update({"_id": obj_id}, {"$set": _dict})
-        employee = current_app.db.employees.find_one({"_id": obj_id})
+        current_app.db.employees.update(
+            {BaseModel.Fields._ID: obj_id}, {"$set": _dict}
+        )
+        employee = current_app.db.employees.find_one(
+            {BaseModel.Fields._ID: obj_id}
+        )
         return employee
 
 
 
     def delete(self, obj_id):
 
-        result = current_app.db.employees.remove({"_id": obj_id})
+        result = current_app.db.employees.remove(
+            {BaseModel.Fields._ID: obj_id}
+        )
         if not result['err'] and result['n']:
             return '', 204
         else:

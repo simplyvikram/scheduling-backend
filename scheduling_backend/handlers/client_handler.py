@@ -5,7 +5,7 @@ from scheduling_backend.handlers import marshaling_handler
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
-from scheduling_backend.models import Client
+from scheduling_backend.models import BaseModel, Client
 
 
 class ClientHandler(BaseHandler):
@@ -38,10 +38,13 @@ class ClientHandler(BaseHandler):
             raise UserException("Duplicate user name, choose another name.")
 
 
+    @marshaling_handler
     def get(self, obj_id=None):
 
         if obj_id:
-            client = current_app.db.clients.find_one({"_id": obj_id})
+            client = current_app.db.clients.find_one(
+                {BaseModel.Fields._ID: obj_id}
+            )
             if client is None:
                 return {}
 
@@ -63,7 +66,9 @@ class ClientHandler(BaseHandler):
 
         obj_id = current_app.db.clients.insert(_dict)
         # todo can the data have an array of clients to be inserted????
-        client_dict = current_app.db.clients.find_one({"_id": obj_id})
+        client_dict = current_app.db.clients.find_one(
+            {BaseModel.Fields._ID: obj_id}
+        )
 
         return client_dict
 
@@ -73,9 +78,12 @@ class ClientHandler(BaseHandler):
 
         _dict = self.data
 
-        current_app.db.clients.update({"_id": obj_id}, {'$set': _dict})
-
-        client_dict = current_app.db.clients.find_one({"_id": obj_id})
+        current_app.db.clients.update(
+            {BaseModel.Fields._ID: obj_id}, {'$set': _dict}
+        )
+        client_dict = current_app.db.clients.find_one(
+            {BaseModel.Fields._ID: obj_id}
+        )
         return client_dict
 
 
@@ -83,7 +91,7 @@ class ClientHandler(BaseHandler):
     def delete(self, obj_id):
 
         # todo can the data have an array of clients to be deleted????
-        result = current_app.db.clients.remove({"_id": obj_id})
+        result = current_app.db.clients.remove({BaseModel.Fields._ID: obj_id})
 
         if not result['err'] and result['n']:
             return '', 204

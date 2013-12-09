@@ -11,6 +11,7 @@ class JobShiftHandler(BaseHandler):
     def __init__(self):
         super(JobShiftHandler, self).__init__(schema_job_shift)
 
+    @marshaling_handler
     def get(self, job_shift_id=None):
         return {"method": "GET job shift"}
 

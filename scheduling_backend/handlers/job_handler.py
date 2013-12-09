@@ -10,10 +10,10 @@ import flask.ext.restful.types
 
 from scheduling_backend.utils import DateUtils
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.models import Job, JobShift
 from scheduling_backend.handlers import Params, marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
+from scheduling_backend.models import BaseModel, Job, JobShift
 
 
 class JobHandler(BaseHandler):
@@ -53,6 +53,8 @@ class JobHandler(BaseHandler):
     def preprocess_PATCH(self):
         pass
 
+
+    @marshaling_handler
     def get(self, job_id=None):
 
         if not job_id and self.args.get(Params.INCLUDE_JOBSHIFTS, None):
@@ -61,13 +63,15 @@ class JobHandler(BaseHandler):
 
         if job_id:
             # Find the job with the matching _id
-            job = current_app.db.jobs.find_one({"_id": job_id})
-            if job is None:
+            job_dict = current_app.db.jobs.find_one(
+                {BaseModel.Fields._ID: job_id}
+            )
+            if job_dict is None:
                 return {}
 
             if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
-                self._append_jobshift_to_job_response(job)
-            return job
+                self._append_jobshift_to_job_response(job_dict)
+            return job_dict
 
         else:
             # find all jobs
@@ -100,7 +104,7 @@ class JobHandler(BaseHandler):
                                job.scheduled_start_time,
                                job.scheduled_end_time)
 
-        job_dict = current_app.db.jobs.find_one({"_id": job_id})
+        job_dict = current_app.db.jobs.find_one({BaseModel.Fields._ID: job_id})
 
         if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
             self._append_jobshift_to_job_response(job_dict)
@@ -111,7 +115,7 @@ class JobHandler(BaseHandler):
     @marshaling_handler
     def patch(self, job_id):
 
-        job_dict = current_app.db.jobs.find_one({"_id": job_id})
+        job_dict = current_app.db.jobs.find_one({BaseModel.Fields._ID: job_id})
         if not job_dict:
             raise UserException("Invalid job id")
 
@@ -135,14 +139,19 @@ class JobHandler(BaseHandler):
                                                     new_scheduled_end_time)
 
         # make all the necessary patch changes
-        current_app.db.jobs.update({"_id": job_id}, {'$set': _dict})
+        current_app.db.jobs.update(
+            {BaseModel.Fields._ID: job_id},
+            {'$set': _dict}
+        )
         self._modify_jobshifts_dates(job_id, new_start_date, new_end_date)
         self._modify_jobshifts_times(job_id,
                                      new_scheduled_start_time,
                                      new_scheduled_end_time)
 
         # not retrieve all the information about the job and send it back
-        job_dict = current_app.db.jobs.find_one({"_id": job_id})
+        job_dict = current_app.db.jobs.find_one(
+            {BaseModel.Fields._ID: job_id}
+        )
         if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
             self._append_jobshift_to_job_response(job_dict)
 
@@ -267,8 +276,10 @@ class JobHandler(BaseHandler):
 
     def _append_jobshift_to_job_response(self, job_dict):
 
+        job_id = job_dict[BaseModel.Fields._ID]
+
         jobshifts = current_app.db.jobshifts.find(
-            {JobShift.Fields.JOB_ID: job_dict["_id"]}
+            {JobShift.Fields.JOB_ID: job_id}
         )
 
         jobshifts = list(jobshifts)
@@ -282,7 +293,9 @@ class JobHandler(BaseHandler):
             {JobShift.Fields.JOB_ID: job_id},
             justOne=False
         )
-        result = current_app.db.jobs.remove({"_id": job_id})
+        result = current_app.db.jobs.remove(
+            {BaseModel.Fields._ID: job_id}
+        )
 
         if not result['err'] and result['n']:
             return '', 204
