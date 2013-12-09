@@ -1,7 +1,9 @@
 
+import flask.ext.restful.types
+
 from flask import current_app as current_app
 
-from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.handlers import marshaling_handler, Params
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
@@ -13,6 +15,16 @@ class ClientHandler(BaseHandler):
     def __init__(self):
         super(ClientHandler, self).__init__(schema_client)
 
+    def preprocess(self):
+        self.req_parser.add_argument(Params.ACTIVE,
+                                     type=flask.ext.restful.types.boolean,
+                                     location='args',
+                                     default=None,
+                                     required=False)
+
+        self.args = self.req_parser.parse_args()
+
+        super(ClientHandler, self).preprocess()
 
     def preprocess_PATCH(self):
         name = self.data.get(Client.Fields.NAME, None)
@@ -51,7 +63,19 @@ class ClientHandler(BaseHandler):
             return client
 
         else:
-            clients_cursor = current_app.db.clients.find()
+            query_dict = {}
+            active = self.args.get(Params.ACTIVE, None)
+
+            # active is an optional param, it may or may not be present. Hence
+            # we explicitly check it with True or False.
+            # if absent it will be None
+
+            if active is True:
+                query_dict[Client.Fields.ACTIVE] = True
+            elif active is False:
+                query_dict[Client.Fields.ACTIVE] = False
+
+            clients_cursor = current_app.db.clients.find(query_dict)
             clients_list = list(clients_cursor)
 
             return clients_list

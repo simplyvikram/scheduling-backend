@@ -1,8 +1,10 @@
 
 from flask import current_app as current_app
 
+import flask.ext.restful.types
+
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.handlers import marshaling_handler, Params
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employee
 from scheduling_backend.models import BaseModel, Employee
@@ -13,6 +15,15 @@ class EmployeeHandler(BaseHandler):
     def __init__(self):
         super(EmployeeHandler, self).__init__(schema_employee)
 
+    def preprocess(self):
+        self.req_parser.add_argument(Params.ACTIVE,
+                                     type=flask.ext.restful.types.boolean,
+                                     location='args',
+                                     default=None,
+                                     required=False)
+        self.args = self.req_parser.parse_args()
+
+        super(EmployeeHandler, self).preprocess()
 
     def preprocess_PATCH(self):
 
@@ -65,7 +76,19 @@ class EmployeeHandler(BaseHandler):
 
             return employee
         else:
-            employees_cursor = current_app.db.employees.find()
+            query_dict = {}
+            active = self.args.get(Params.ACTIVE, None)
+
+            # active is an optional param, it may or may not be present. Hence
+            # we explicitly check it with True or False.
+            # If absent it will be None
+
+            if active is True:
+                query_dict[Employee.Fields.ACTIVE] = True
+            elif active is False:
+                query_dict[Employee.Fields.ACTIVE] = False
+
+            employees_cursor = current_app.db.employees.find(query_dict)
             employee_list = list(employees_cursor)
 
             return employee_list

@@ -5,7 +5,6 @@ from flask import current_app as current_app
 from flask import g
 
 from flask.ext.restful import Resource
-import flask.ext.restful
 import flask.ext.restful.types
 
 from scheduling_backend.utils import DateUtils
@@ -57,7 +56,7 @@ class JobHandler(BaseHandler):
     @marshaling_handler
     def get(self, job_id=None):
 
-        if not job_id and self.args.get(Params.INCLUDE_JOBSHIFTS, None):
+        if not job_id and self.args.get(Params.INCLUDE_JOBSHIFTS, False):
             raise UserException("Inclusion of job shifts not allowed for this"
                                 "operation")
 
@@ -69,7 +68,7 @@ class JobHandler(BaseHandler):
             if job_dict is None:
                 return {}
 
-            if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
+            if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
                 self._append_jobshift_to_job_response(job_dict)
             return job_dict
 
@@ -106,7 +105,7 @@ class JobHandler(BaseHandler):
 
         job_dict = current_app.db.jobs.find_one({BaseModel.Fields._ID: job_id})
 
-        if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
+        if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
             self._append_jobshift_to_job_response(job_dict)
 
         return job_dict
@@ -152,7 +151,7 @@ class JobHandler(BaseHandler):
         job_dict = current_app.db.jobs.find_one(
             {BaseModel.Fields._ID: job_id}
         )
-        if self.args.get(Params.INCLUDE_JOBSHIFTS, None):
+        if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
             self._append_jobshift_to_job_response(job_dict)
 
         return job_dict

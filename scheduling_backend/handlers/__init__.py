@@ -11,6 +11,7 @@ class Params(object):
 
     INCLUDE_JOBSHIFTS = "includejobshifts"
     INCLUDE_EMPLOYEESHIFTS = "includeemployeeshifts"
+    ACTIVE = "active"
     JOB_ID = "job_id"
     FROM_DATE = "from_date"
     TO_DATE = "to_date"
