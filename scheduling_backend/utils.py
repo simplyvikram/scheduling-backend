@@ -5,8 +5,6 @@ from datetime import datetime, date, time, timedelta
 import json
 
 import jsonschema
-from jsonschema import ValidationError, SchemaError
-
 
 class JsonUtils(object):
 
@@ -23,7 +21,8 @@ class JsonUtils(object):
 
 
     @staticmethod
-    def _work_on_dict_keys(_dict):
+    def _work_on_str_objectid_dict_keys(_dict):
+
         for key, value in _dict.items():
 
             if key.endswith('_id') or key == '_id':
@@ -33,15 +32,7 @@ class JsonUtils(object):
 
 
     @staticmethod
-    def change_str_ids_to_object_id(obj):
-
-        obj_json = json.dumps(obj)
-        obj_new = json.loads(obj_json, object_hook=JsonUtils._work_on_dict_keys)
-        return obj_new
-
-
-    @staticmethod
-    def change_obj_ids_to_str_ids(obj):
+    def change_all_objectids_to_str(obj):
         # encode rest response
         """
         Converts a python data object to another python object, while encoding
@@ -51,6 +42,17 @@ class JsonUtils(object):
         obj_new = json.loads(obj_json)
         return obj_new
 
+
+    @staticmethod
+    def change_all_str_objectids_to_objectids(obj):
+
+        obj_json = json.dumps(obj)
+        obj_new = json.loads(
+            obj_json, object_hook=JsonUtils._work_on_str_objectid_dict_keys
+        )
+        return obj_new
+
+
     @staticmethod
     def validate_json(data, schema):
         """
@@ -58,14 +60,11 @@ class JsonUtils(object):
         data - json data as a python data structure
         schema - json schema as a python dict
 
+        throws an exception if validation fails, if not, returns None
         Returns a python dict representing the error is validation fails, else
         returns nothing
         """
-
-        try:
-            jsonschema.validate(data, schema)
-        except (ValidationError, SchemaError) as e:
-            return {'error': repr(e)}
+        jsonschema.validate(data, schema)
 
 
 class DateUtils(object):
@@ -83,36 +82,30 @@ class DateUtils(object):
     }
 
     @staticmethod
-    def validate(datetime_str, type_of_datetime):
+    def to_datetime_format(str, type_of_datetime):
         """
-        Returns an error message in python dict in case date/time/datetime is
-        not a valid one in iso8601 format, else does nothing
+        returns a datetime object, use date() or time() to convert it to a date
+        or time object respectively or just use it as it is if datetime is what
+        you need
         """
-        if not datetime_str:
-            return {"error": type_of_datetime + " cannot be empty/None!"}
+        _datetime = datetime.strptime(str, DateUtils.FORMATS[type_of_datetime])
+        if type_of_datetime == DateUtils.DATE:
+            return _datetime.date()
+        elif type_of_datetime == DateUtils.TIME:
+            return _datetime.time()
 
-        if type_of_datetime not in [DateUtils.DATE,
-                                    DateUtils.TIME,
-                                    DateUtils.DATETIME]:
-            return {"error": "wrong datetime format"}
+        return _datetime
 
-        try:
-            print "DATEUTILS validating date:%s  format:%s" % \
-                  (datetime_str, DateUtils.FORMATS[type_of_datetime])
-
-            _datetime = datetime.strptime(datetime_str,
-                                          DateUtils.FORMATS[type_of_datetime])
-        except Exception as e:
-
-            error = {"error": str(e)}
-            print "Exception - ", error
-            return error
 
     @staticmethod
     def get_dates_in_range(start_date_str,
                            end_date_str,
                            include_saturday=False,
                            include_sunday=False):
+        """
+        Returns a list of date objects between start and end dates(inclusive of
+        both start and end dates)
+        """
 
         date_format = DateUtils.FORMATS[DateUtils.DATE]
 
@@ -124,6 +117,7 @@ class DateUtils(object):
 
         dates = []
         while (end_date - current_date).total_seconds() >= 0:
+            # print "current date-------", current_date
             if (
                     (current_date.isoweekday() in range(1, 6)) or
                     (current_date.isoweekday() == 6 and include_saturday) or
@@ -135,31 +129,3 @@ class DateUtils(object):
             current_date = current_date + timedelta(days=1)
 
         return dates
-
-
-class ObjectIdUtils(object):
-
-    @staticmethod
-    def valid_oid(str_id):
-        try:
-            ObjectId(str_id)
-            return True
-        except (InvalidId, ValueError, TypeError) as e:
-            return False
-
-
-
-
-
-# if __name__ == '__main__':
-#     print "testing date time"
-#
-#     start_date_str = "2013-11-02"
-#     end_date_str = "2013-11-22"
-#
-#     dates = DateUtils.get_dates_in_range(start_date_str, end_date_str,
-#                                          include_saturday=False,
-#                                          include_sunday=False)
-#
-#     for date in dates:
-#         print date

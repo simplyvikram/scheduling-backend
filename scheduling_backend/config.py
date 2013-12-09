@@ -11,7 +11,7 @@ class ProductionConfig(Config):
 
 
 class DevelopmentConfig(Config):
-    DEBUG = True
+    DEBUG = False
     TESTING = True
     MONGODB_URI = 'mongodb://localhost:27017/'
     MONGODB_NAME = 'test_db'

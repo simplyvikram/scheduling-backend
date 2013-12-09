@@ -1,7 +1,7 @@
 
 schema_type = "http://json-schema.org/draft-04/schema#"
 
-from models import field_id, Client, Employee, EmployeeShift, Job, JobShift
+from models import BaseModel, Client, Employee, EmployeeShift, Job, JobShift
 
 
 schema_client = {
@@ -9,7 +9,7 @@ schema_client = {
     "title": "Client schema",
     "type": "object",
     "properties": {
-        field_id: {
+        BaseModel.Fields._ID: {
             "type": "string"
         },
         Client.Fields.NAME: {
@@ -28,7 +28,7 @@ schema_employee = {
     "title": "Employee schema",
     "type": "object",
     "properties": {
-        field_id: {
+        BaseModel.Fields._ID: {
             "type": "string"
         },
         Employee.Fields.NAME: {
@@ -51,7 +51,7 @@ schema_job = {
     "type": "object",
     "properties": {
 
-        field_id: {
+        BaseModel.Fields._ID: {
             "type": "string"
         },
         Job.Fields.CLIENT_ID: {
@@ -90,7 +90,7 @@ schema_employee_shift = {
     "type": "object",
     "properties": {
 
-        field_id: {
+        BaseModel.Fields._ID: {
             "type": "string"
         },
         EmployeeShift.Fields.EMPLOYEE_ID: {
@@ -122,7 +122,7 @@ schema_job_shift = {
     "type": "object",
     "properties": {
 
-        field_id: {
+        BaseModel.Fields._ID: {
             "type": "string"
         },
         JobShift.Fields.JOB_ID: {

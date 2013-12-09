@@ -1,8 +1,8 @@
 
 from flask import current_app as current_app
-from flask import request
 
-from scheduling_backend.handlers import common_handler
+from scheduling_backend.exceptions import UserException
+from scheduling_backend.handlers import marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employee
 from scheduling_backend.models import Employee
@@ -14,82 +14,45 @@ class EmployeeHandler(BaseHandler):
         super(EmployeeHandler, self).__init__(schema_employee)
 
 
-    def preprocess_data(self, data):
+    def preprocess_PATCH(self):
 
-        if self.error:
-            return
-
-        if request.method == BaseHandler.POST:
-            self._validate_post_data()
-        elif request.method == BaseHandler.PATCH:
-            self._validate_patch_data()
-
-
-    def _validate_patch_data(self):
-
-        if self.error:
-            return
-
-        self.validate_str_field(Employee.Fields.NAME, False)
-        self.validate_str_field(Employee.Fields.CURRENT_ROLE, False)
-
-        if self.error:
-            return
-
-        # Additional check for duplicate names
         name = self.data.get(Employee.Fields.NAME, None)
-        if name is not None:
-            is_name_duplicate = self._check_employee_name_in_database(name)
-            if is_name_duplicate:
-                self.error = {"error": "Duplicate employee name."
-                                       " Choose another name"}
-                return
-
-
-        # Additional check to make sure current role is in the
-        #     list of allowed roles
         current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
-        if current_role is not None:
+
+        self._validate_employee_name(name)
+        self._validate_employee_role(current_role)
+
+
+    def preprocess_POST(self):
+        self.preprocess_PATCH()
+
+
+    def _validate_employee_role(self, current_role):
+        """
+        We validate that the employee role is present is a valid one
+        """
+        current_role_present = isinstance(current_role, str)
+        if current_role_present:
             if current_role not in Employee.allowed_roles():
-                self.error = {
-                    "error": "Allowed values for current_role are %s" %
-                             str(Employee.allowed_roles())
-                }
-                return
+                raise UserException("Allowed values for current_role are %s" %
+                                    str(Employee.allowed_roles()))
 
 
-    def _validate_post_data(self):
+    def _validate_employee_name(self, emp_name):
+        """
+        We check if the employee name, if present is a valid one
+        """
+        if emp_name == '':
+            raise UserException("Employeee name cannot be empty")
 
-        if self.error:
-            return
-
-        name = self.data.get(Employee.Fields.NAME, None)
-        current_role = self.data.get(Employee.Fields.NAME, None)
-        active = self.data.get(Employee.Fields.ACTIVE, None)
-
-        l = [name, current_role, active]
-
-        is_any_field_missing = BaseHandler.none_present_in_list(l)
-
-        if is_any_field_missing:
-            self.error = {"error": "Missing required field"}
-            return
-
-        self._validate_patch_data()
-
-
-    def _check_employee_name_in_database(self, emp_name):
-
-        matching_emp_count = \
-            current_app.db.employees.find({Employee.Fields.NAME: emp_name}).count()
+        matching_emp_count = current_app.db.employees.find(
+            {Employee.Fields.NAME: emp_name}
+        ).count()
 
         if matching_emp_count > 0:
-            return True
-
-        return False
+            raise UserException("Duplicate employee name, choose another name")
 
 
-    @common_handler
     def get(self, obj_id=None):
 
         if obj_id:
@@ -104,20 +67,26 @@ class EmployeeHandler(BaseHandler):
 
             return employee_list
 
-    @common_handler
+    @marshaling_handler
     def post(self):
+        # We do this, to make sure, we have all the data we need to create
+        # the employee, if not an exception is raised
+        temp = Employee(**self.data)
+        employee_dict = Employee.encode(temp)
 
-        obj_id = current_app.db.employees.insert(self.data)
+        obj_id = current_app.db.employees.insert(employee_dict)
         # todo can the data have an array of employees to be inserted????
-        employee = current_app.db.employees.find_one({"_id": obj_id})
+        employee_dict = current_app.db.employees.find_one({"_id": obj_id})
 
-        return employee
+        return employee_dict
 
 
-    @common_handler
+    @marshaling_handler
     def patch(self, obj_id):
 
-        current_app.db.employees.update({"_id": obj_id}, {"$set": self.data})
+        _dict = self.data
+
+        current_app.db.employees.update({"_id": obj_id}, {"$set": _dict})
         employee = current_app.db.employees.find_one({"_id": obj_id})
         return employee
 

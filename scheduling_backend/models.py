@@ -1,19 +1,27 @@
 
-field_id = "_id"
-# class Fields(object):
+class BaseModel(object):
 
+    class Fields(object):
+        _ID = "_id"
 
-class Client(object):
+    def __init__(self, _id):
+        super(BaseModel, self).__init__()
+        self._id = _id
+
+class Client(BaseModel):
 
     class Fields(object):
         NAME = "name"
         ACTIVE = "active"
 
-    def __init__(self, name, active):
+    def __init__(self, name, active, _id=None):
+
+        super(Client, self).__init__(_id)
+
         self.name = name
         self.active = active
 
-        self._id = None
+
 
     @classmethod
     def encode(cls, client):
@@ -22,25 +30,25 @@ class Client(object):
             Client.Fields.ACTIVE: client.active
         }
         if client._id:
-            d[field_id] = client._id
+            d[BaseModel.Fields._ID] = client._id
 
         return d
 
 
-class Employee(object):
+class Employee(BaseModel):
 
     class Fields(object):
         NAME = "name"
         CURRENT_ROLE = "current_role"
         ACTIVE = "active"
 
-    def __init__(self, name, current_role, active):
+    def __init__(self, name, current_role, active, _id=None):
+        super(Employee, self).__init__(_id)
 
         self.name = name
         self.current_role = current_role
         self.active = active
 
-        self._id = None
 
     @classmethod
     def encode(cls, employee):
@@ -50,17 +58,24 @@ class Employee(object):
             Employee.Fields.ACTIVE: employee.active
         }
         if employee._id:
-            d[field_id] = employee._id
+            d[BaseModel.Fields._ID] = employee._id
 
         return d
+
 
     @classmethod
     def allowed_roles(cls):
         return ['plumber', 'worker', 'carpenter',
-                'fitter', 'the boss']
+                'fitter', 'slacker']
 
+    def __repr__(self):
+        return "<Employee %s:%s %s:%s, %s:%s, %s:%s>" % \
+               (BaseModel.Fields._ID, str(self._id),
+                Employee.Fields.NAME, self.name,
+                Employee.Fields.CURRENT_ROLE, self.current_role,
+                Employee.Fields.ACTIVE, str(self.active))
 
-class Job(object):
+class Job(BaseModel):
 
     class Fields(object):
         CLIENT_ID = "client_id"
@@ -73,16 +88,21 @@ class Job(object):
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
 
-    DEFAULT_START_TIME = "08:00:00"
-    DEFAULT_END_TIME = "05:00:00"
+    # todo currently these are required
+    # DEFAULT_START_TIME = datetime.time(hour=8, minute=0, second=0)
+    # DEFAULT_END_TIME = datetime.time(hour=16, minute=0, second=0)
+    # DEFAULT_START_TIME = "08:00:00"
+    # DEFAULT_END_TIME = "05:00:00"
 
     def __init__(self,
                  client_id, name, location,
                  start_date,
                  end_date,
-                 scheduled_start_time=DEFAULT_START_TIME,
-                 scheduled_end_time=DEFAULT_END_TIME):
+                 scheduled_start_time,
+                 scheduled_end_time,
+                 _id=None):
 
+        super(Job, self).__init__(_id)
         self.client_id = client_id
         self.name = name
         self.location = location
@@ -93,7 +113,6 @@ class Job(object):
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
 
-        self._id = None
 
     @classmethod
     def encode(cls, job):
@@ -109,12 +128,12 @@ class Job(object):
             Job.Fields.SCHEDULED_END_TIME: job.scheduled_end_time
         }
         if job._id:
-            d[field_id] = job._id
+            d[BaseModel.Fields._ID] = job._id
 
         return d
 
 
-class EmployeeShift(object):
+class EmployeeShift(BaseModel):
 
     class Fields(object):
 
@@ -130,11 +149,14 @@ class EmployeeShift(object):
                  scheduled_start_time,
                  scheduled_end_time,
                  actual_start_time=None,
-                 actual_end_time=None):
+                 actual_end_time=None,
+                 _id=None):
         """
         Use actual start/end times for all calculations. If they are
         absent use the scheduled start/end times for the calculations.
         """
+
+        super(EmployeeShift, self).__init__(_id)
         # todo ask shaheen about above
         self.employee_id = employee_id
 
@@ -143,7 +165,6 @@ class EmployeeShift(object):
         self.actual_start_time = actual_start_time
         self.actual_end_time = actual_end_time
 
-        self._id = None
 
     @classmethod
     def encode(cls, employee_shift):
@@ -164,12 +185,12 @@ class EmployeeShift(object):
         }
 
         if employee_shift._id:
-            d[field_id] = employee_shift._id
+            d[BaseModel.Fields._ID] = employee_shift._id
 
         return d
 
 
-class JobShift(object):
+class JobShift(BaseModel):
 
     class Fields(object):
         JOB_ID = "job_id"
@@ -183,12 +204,15 @@ class JobShift(object):
     def __init__(self, job_id, job_date,
                  scheduled_start_time,
                  scheduled_end_time,
-                 employee_shifts=list()):
+                 employee_shifts=list(),
+                 _id=None):
         """
         Always need to specify scheduled_start_time. When we create job_shifts
         initally they either from the copied job shift, or from the current
+        initally they either from the copied job shift, or from the current
         values in the job
         """
+        super(JobShift, self).__init__(_id)
 
         self.job_id = job_id
         self.job_date = job_date
@@ -198,7 +222,6 @@ class JobShift(object):
 
         self.employee_shifts = employee_shifts
 
-        self._id = None
 
     @classmethod
     def encode(cls, job_shift):
@@ -210,7 +233,7 @@ class JobShift(object):
             JobShift.Fields.SCHEDULED_END_TIME: job_shift.scheduled_end_time
         }
         if job_shift._id:
-            d[field_id] = job_shift._id
+            d[BaseModel.Fields._ID] = job_shift._id
 
         if not job_shift.employee_shifts:
             # If employee_shifts is none or empty
@@ -218,9 +241,8 @@ class JobShift(object):
 
 
         _list = map(lambda emp_shift: EmployeeShift.encode(emp_shift),
-                job_shift.employee_shifts)
+                    job_shift.employee_shifts)
 
         d[JobShift.Fields.EMPLOYEE_SHIFTS] = _list
 
         return d
-

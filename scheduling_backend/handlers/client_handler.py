@@ -1,12 +1,8 @@
 
-from flask.ext.restful import Resource
-from flask import request
 from flask import current_app as current_app
 
-from scheduling_backend.utils import (
-    JsonUtils
-)
-from scheduling_backend.handlers import common_handler
+from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
 from scheduling_backend.models import Client
@@ -17,63 +13,31 @@ class ClientHandler(BaseHandler):
     def __init__(self):
         super(ClientHandler, self).__init__(schema_client)
 
-    def preprocess_data(self, data):
-        if self.error:
-            return
-        if request.method == BaseHandler.POST:
-            self._validate_post_data()
-        elif request.method == BaseHandler.PATCH:
-            self._validate_patch_data()
 
-
-
-    def _validate_patch_data(self):
-
-        if self.error:
-            return
-
-        self.validate_str_field(Client.Fields.NAME, False)
-        self.validate_field_existence(Client.Fields.ACTIVE, False)
-
-        # Additional check for duplicate name
+    def preprocess_PATCH(self):
         name = self.data.get(Client.Fields.NAME, None)
-        if name is not None:
-            is_name_duplicate = self._check_client_name_in_database(name)
-            if is_name_duplicate:
-                self.error = {"error": "Duplicate client name. "
-                                       "Choose another name"}
-                return
+        self._validate_client_name(name)
 
 
-    def _validate_post_data(self):
-        if self.error:
-            return
-
-        name = self.data.get(Client.Fields.NAME, None)
-        active = self.data.get(Client.Fields.ACTIVE, None)
-
-        l = [name, active]
-
-        is_any_field_missing = BaseHandler.none_present_in_list(l)
-
-        if is_any_field_missing:
-            self.error = {"error": "Missing required field"}
-            return
-
-        self._validate_patch_data()
+    def preprocess_POST(self):
+        self.preprocess_PATCH()
 
 
-    def _check_client_name_in_database(self, client_name):
+    def _validate_client_name(self, client_name):
+        """
+        We check if the client name, if present is a valid one
+        """
+        if client_name == '':
+            raise UserException("Client name cannot be empty")
 
-        matching_client_count = \
-            current_app.db.clients.find({Client.Fields.NAME: client_name}).count()
+        matching_client_count = current_app.db.clients.find(
+            {Client.Fields.NAME: client_name}
+        ).count()
 
         if matching_client_count > 0:
-            return True
+            raise UserException("Duplicate user name, choose another name.")
 
-        return False
 
-    @common_handler
     def get(self, obj_id=None):
 
         if obj_id:
@@ -90,26 +54,32 @@ class ClientHandler(BaseHandler):
             return clients_list
 
 
-    @common_handler
+    @marshaling_handler
     def post(self):
+        # We create a Client to make sure we have all the data we need to
+        # create a client, if not an exception is raised
+        client = Client(**self.data)
+        _dict = Client.encode(client)
 
-        obj_id = current_app.db.clients.insert(self.data)
+        obj_id = current_app.db.clients.insert(_dict)
         # todo can the data have an array of clients to be inserted????
-        client = current_app.db.clients.find_one({"_id": obj_id})
+        client_dict = current_app.db.clients.find_one({"_id": obj_id})
 
-        return client
+        return client_dict
 
 
-    @common_handler
+    @marshaling_handler
     def patch(self, obj_id):
 
-        current_app.db.clients.update({"_id": obj_id}, {'$set': self.data})
+        _dict = self.data
 
-        client = current_app.db.clients.find_one({"_id": obj_id})
-        return client
+        current_app.db.clients.update({"_id": obj_id}, {'$set': _dict})
+
+        client_dict = current_app.db.clients.find_one({"_id": obj_id})
+        return client_dict
 
 
-    # @common_handler
+    # @marshaling_handler
     def delete(self, obj_id):
 
         # todo can the data have an array of clients to be deleted????

@@ -2,18 +2,67 @@
 import logging
 import os
 import sys
-
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
+from pymongo import MongoClient
 from flask import abort, Flask, request
 from flask.ext.restful import Api
-from pymongo import MongoClient
-from werkzeug.routing import BaseConverter, ValidationError
+from werkzeug.routing import BaseConverter
+
+from exceptions import UserException, generate_REST_exception
+
 
 app_name = 'scheduling_backend'
 
 global the_context
+
+class ApiBase(Api):
+    """
+    Flask restful intercepts all exceptions and returns a totally useless
+    JSON error. Here we add handlers to make sure the messages for both the
+    user and regular exceptions get handled properly
+    """
+
+    def __init__(self, app=None, prefix='',
+                 default_mediatype='application/json', decorators=None,
+                 catch_all_404s=False):
+
+        super(ApiBase, self).__init__(app, prefix,
+                                      default_mediatype, decorators,
+                                      catch_all_404s)
+
+        app.handle_exception = self.handle_exception
+        app.handle_user_exception = self.handle_user_exception
+
+
+    def handle_exception(self, e):
+
+        e = generate_REST_exception(e)
+
+        if request.path.startswith(self.prefix):
+            return super(ApiBase, self).handle_error(e)
+
+        if request.endpoint in self.endpoints:
+            return super(ApiBase, self).handle_error(e)
+        else:
+            return Flask.handle_exception(self.app, e)
+
+
+    def handle_user_exception(self, e):
+
+        import traceback
+        traceback.print_exc()
+
+        e = generate_REST_exception(e)
+
+        if request.path.startswith(self.prefix):
+            return super(ApiBase, self).handle_error(e)
+
+        if request.endpoint in self.endpoints:
+            return super(ApiBase, self).handle_error(e)
+        else:
+            return Flask.handle_exception(self.app, e)
 
 
 class BsonObjectIdConverter(BaseConverter):
@@ -69,7 +118,7 @@ def init_db(app):
 
 
 def register_views(app):
-    api = Api(app)
+    api = ApiBase(app)
 
     app.url_map.converters['ObjectId'] = BsonObjectIdConverter
 
@@ -94,6 +143,9 @@ def register_views(app):
     api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
     api.add_resource(JobHandler, '/jobs', endpoint="jobs")
 
+    # todo show all jobshifts for today
+    api.add_resource(JobShiftHandler, '/jobshifts/date/<string:the_date>',
+                     endpoint="jobshifts_for_date")
 
 
     # GET
@@ -103,9 +155,9 @@ def register_views(app):
     api.add_resource(JobShiftHandler,
                      '/jobshifts/<ObjectId:jobshift_id>',
                      endpoint="jobshift")
-    api.add_resource(JobShiftHandler,
-                     '/jobshifts',
-                     endpoint="jobsshifts")
+    # api.add_resource(JobShiftHandler,
+    #                  '/job/<ObjectId:job_id>/jobshifts',
+    #                  endpoint="jobsshifts")
 
     # # # POST with no data, returns created Employee Shift
     # api.add_resource('/jobshifts/<ObjectId:job_shift_id>'
@@ -116,26 +168,42 @@ def register_views(app):
     # GET, employee shifts have post
     # PATCH, return modified employee shift
     # DELETE, removes employeeshift from jobshift
+    # todo check if the employee is scheduled elsewhere, if he is
+    # remove him from there and add it here
     api.add_resource(EmployeeShiftHandler,
                      '/employeeshifts/<ObjectId:employee_shift_id>',
                      endpoint="employeeshift")
 
+    # todo figure out a way to delete employee shifts
+
+
+    # todo for a given date give me a list of employees with employeeids
+    # todo and for the employees not scheduled return null for employeeids
+
+    # todo
+    # /date/<date>/employees
+    # /date/<date>/jobs
+    # /date/<date>/jobshifts
 
     # POST with no data to create an employeeshift todo maybe a new handler
     api.add_resource(JobShiftHandler,
                      '/addemployeeshift'
                      '/jobshifts/<ObjectId:jobshift_id>'
-                     '/employee/<ObjectId:employee_id>',
+                     '/employees/<ObjectId:employee_id>',
 
                      endpoint="create_employee_shift")
 
-    # todo finish url for copy job shifts
+    # todo finish url for copy job shifts for date range
     # api.add_resource(JobShiftHandler,
     #                  '/copyjobshift/<ObjectId:jobshift_id')
     #
     # post_copy_job_shifts = 'jobshift/<ObjectId:jobshift_id>/copy'
     # post_copy_job_shifts_params = '?' + 'fromdate' + '=XXXX' + '&' + 'todate' + '=YYY'
 
+    # todo whenever jobshifts are created create all jobshifts incl sat/sun
+    # during copy just skip over sat/sun unless specified by params
+
+    # todo copy a job shift for date range(start date, end date)
 
 
     api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
@@ -143,23 +211,6 @@ def register_views(app):
     from views import views
     app.register_blueprint(views)
 
-    # @app.before_request
-    # def before(*args, **kwargs):
-    #     data = request.get_json(force=False, silent=True)
-    #     if data:
-    #         print "Before request - type:%s data:%s" % (type(data), data)
-    #     else:
-    #         print "Before reqquest - data is none"
-    #
-    # @app.after_request
-    # def after(response):
-    #     data = response.data
-    #     if data:
-    #         print "After request - data", str(data)
-    #     else:
-    #         print "After request - data is none"
-    #
-    #     return response
 
 def enable_logging(app):
     formatter = logging.Formatter(
