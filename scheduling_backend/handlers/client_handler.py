@@ -15,7 +15,7 @@ class ClientHandler(BaseHandler):
     def __init__(self):
         super(ClientHandler, self).__init__(schema_client)
 
-    def preprocess(self):
+    def preprocess_GET(self):
         self.req_parser.add_argument(Params.ACTIVE,
                                      type=flask.ext.restful.types.boolean,
                                      location='args',
@@ -23,8 +23,6 @@ class ClientHandler(BaseHandler):
                                      required=False)
 
         self.args = self.req_parser.parse_args()
-
-        super(ClientHandler, self).preprocess()
 
     def preprocess_PATCH(self):
         name = self.data.get(Client.Fields.NAME, None)

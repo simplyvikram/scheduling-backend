@@ -15,15 +15,22 @@ class EmployeeHandler(BaseHandler):
     def __init__(self):
         super(EmployeeHandler, self).__init__(schema_employee)
 
-    def preprocess(self):
+    def preprocess_GET(self):
         self.req_parser.add_argument(Params.ACTIVE,
                                      type=flask.ext.restful.types.boolean,
                                      location='args',
                                      default=None,
                                      required=False)
+
+        self.req_parser.add_argument(Params.CURRENT_ROLE,
+                                     type=str,
+                                     location='args',
+                                     default=None,
+                                     required=False)
+
         self.args = self.req_parser.parse_args()
 
-        super(EmployeeHandler, self).preprocess()
+
 
     def preprocess_PATCH(self):
 
@@ -31,22 +38,25 @@ class EmployeeHandler(BaseHandler):
         current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
 
         self._validate_employee_name(name)
-        self._validate_employee_role(current_role)
+        self._validate_current_role(current_role)
 
 
     def preprocess_POST(self):
         self.preprocess_PATCH()
 
 
-    def _validate_employee_role(self, current_role):
+    def _validate_current_role(self, current_role):
         """
         We validate that the employee role is present is a valid one
         """
-        current_role_present = isinstance(current_role, str)
-        if current_role_present:
-            if current_role not in Employee.allowed_roles():
-                raise UserException("Allowed values for current_role are %s" %
-                                    str(Employee.allowed_roles()))
+
+        if current_role is None:
+            return
+        elif current_role is '':
+            raise UserException("current_role cannot be empty.")
+        elif current_role not in Employee.allowed_roles():
+            raise UserException("Allowed values for current_role are %s" %
+                                str(Employee.allowed_roles()))
 
 
     def _validate_employee_name(self, emp_name):
@@ -77,16 +87,22 @@ class EmployeeHandler(BaseHandler):
             return employee
         else:
             query_dict = {}
-            active = self.args.get(Params.ACTIVE, None)
 
             # active is an optional param, it may or may not be present. Hence
             # we explicitly check it with True or False.
             # If absent it will be None
 
+            active = self.args.get(Params.ACTIVE, None)
             if active is True:
                 query_dict[Employee.Fields.ACTIVE] = True
             elif active is False:
                 query_dict[Employee.Fields.ACTIVE] = False
+
+            current_role = self.args.get(Params.CURRENT_ROLE, None)
+            if current_role is not None:
+                # It can be empty, but validate will take care of it
+                self._validate_current_role(current_role)
+                query_dict[Employee.Fields.CURRENT_ROLE] = current_role
 
             employees_cursor = current_app.db.employees.find(query_dict)
             employee_list = list(employees_cursor)
