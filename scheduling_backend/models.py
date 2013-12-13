@@ -133,8 +133,9 @@ class Job(BaseModel):
         return d
 
 
-class EmployeeShift(BaseModel):
-
+class EmployeeShift(object):
+    # caution we inherit this from model instead of object as this is
+    # included as part of jobshift and does not need an _id
     class Fields(object):
 
         EMPLOYEE_ID = "employee_id"
@@ -149,14 +150,13 @@ class EmployeeShift(BaseModel):
                  scheduled_start_time,
                  scheduled_end_time,
                  actual_start_time=None,
-                 actual_end_time=None,
-                 _id=None):
+                 actual_end_time=None):
         """
         Use actual start/end times for all calculations. If they are
         absent use the scheduled start/end times for the calculations.
         """
 
-        super(EmployeeShift, self).__init__(_id)
+        super(EmployeeShift, self).__init__()
         # todo ask shaheen about above
         self.employee_id = employee_id
 
@@ -167,25 +167,22 @@ class EmployeeShift(BaseModel):
 
 
     @classmethod
-    def encode(cls, employee_shift):
+    def encode(cls, employeeshift):
         d = {
-            EmployeeShift.Fields.EMPLOYEE_ID: employee_shift.employee_id,
+            EmployeeShift.Fields.EMPLOYEE_ID: employeeshift.employee_id,
 
             EmployeeShift.Fields.SCHEDULED_START_TIME:
-                employee_shift.scheduled_start_time,
+                employeeshift.scheduled_start_time,
 
             EmployeeShift.Fields.SCHEDULED_END_TIME:
-                employee_shift.scheduled_end_time,
+                employeeshift.scheduled_end_time,
 
             EmployeeShift.Fields.ACTUAL_START_TIME:
-                employee_shift.actual_start_time,
+                employeeshift.actual_start_time,
 
             EmployeeShift.Fields.ACTUAL_END_TIME:
-                employee_shift.actual_end_time
+                employeeshift.actual_end_time
         }
-
-        if employee_shift._id:
-            d[BaseModel.Fields._ID] = employee_shift._id
 
         return d
 

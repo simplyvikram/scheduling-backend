@@ -68,8 +68,12 @@ class JobHandler(BaseHandler):
             if job_dict is None:
                 return {}
 
-            if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
-                self._append_jobshift_to_job_response(job_dict)
+            # todo uncomment this
+            # if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
+            #     self._append_jobshift_to_job_response(job_dict)
+            self._append_jobshift_to_job_response(job_dict)
+
+
             return job_dict
 
         else:

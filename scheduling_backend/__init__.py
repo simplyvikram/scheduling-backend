@@ -126,7 +126,12 @@ def register_views(app):
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
     from handlers.jobshift_handler import JobShiftHandler
-    from handlers.employeeshift_handler import EmployeeShiftHandler
+    from handlers.employeeshift_handler import (
+        AddEmployeeShiftHandler,
+        RemoveEmployeeShiftHandler,
+        MoveEmployeeAcrossJobshifts,
+        ModifyEmployeeShiftHandler
+    )
     from handlers import RoleHandler
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
@@ -144,7 +149,7 @@ def register_views(app):
     api.add_resource(JobHandler, '/jobs', endpoint="jobs")
 
     # todo show all jobshifts for today
-    api.add_resource(JobShiftHandler, '/jobshifts/date/<string:the_date>',
+    api.add_resource(JobShiftHandler, '/jobshifts/date/<string:job_date>',
                      endpoint="jobshifts_for_date")
 
 
@@ -165,16 +170,30 @@ def register_views(app):
     #                  endpoint="createemployeeshift")
 
 
-    # GET, employee shifts have post
-    # PATCH, return modified employee shift
-    # DELETE, removes employeeshift from jobshift
-    # todo check if the employee is scheduled elsewhere, if he is
-    # remove him from there and add it here
-    api.add_resource(EmployeeShiftHandler,
-                     '/employeeshifts/<ObjectId:employee_shift_id>',
-                     endpoint="employeeshift")
+    api.add_resource(AddEmployeeShiftHandler,
+                     '/add'
+                     '/employee/<ObjectId:employee_id>'
+                     '/jobshift/<ObjectId:jobshift_id>',
+                     endpoint="addemployeeshift")
 
-    # todo figure out a way to delete employee shifts
+    api.add_resource(RemoveEmployeeShiftHandler,
+                     '/remove'
+                     '/employee/<ObjectId:employee_id>'
+                     '/jobshift/<ObjectId:jobshift_id>',
+                     endpoint="removeemployeeshift")
+
+    api.add_resource(MoveEmployeeAcrossJobshifts,
+                     '/move'
+                     '/employee/<ObjectId:employee_id>'
+                     '/fromjobshift/<ObjectId:from_jobshift_id>'
+                     '/tojobshift/<ObjectId:to_jobshift_id>',
+                     endpoint="moveemployeeshift")
+
+    api.add_resource(ModifyEmployeeShiftHandler,
+                     '/modify'
+                     '/employee/<ObjectId:employee_id>'
+                     '/jobshift/<ObjectId:jobshift_id>',
+                     endpoint="modifyemployeeshift")
 
 
     # todo for a given date give me a list of employees with employeeids
@@ -185,13 +204,6 @@ def register_views(app):
     # /date/<date>/jobs
     # /date/<date>/jobshifts
 
-    # POST with no data to create an employeeshift todo maybe a new handler
-    api.add_resource(JobShiftHandler,
-                     '/addemployeeshift'
-                     '/jobshifts/<ObjectId:jobshift_id>'
-                     '/employees/<ObjectId:employee_id>',
-
-                     endpoint="create_employee_shift")
 
     # todo finish url for copy job shifts for date range
     # api.add_resource(JobShiftHandler,

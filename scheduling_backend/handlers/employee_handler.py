@@ -3,6 +3,7 @@ from flask import current_app as current_app
 
 import flask.ext.restful.types
 
+from scheduling_backend.database_manager import Collection, DatabaseManager
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import marshaling_handler, Params
 from scheduling_backend.handlers.base_handler import BaseHandler
@@ -78,13 +79,11 @@ class EmployeeHandler(BaseHandler):
     def get(self, obj_id=None):
 
         if obj_id:
-            employee = current_app.db.employees.find_one(
-                {BaseModel.Fields._ID: obj_id}
+            employee = DatabaseManager.find_object_by_id(
+                Collection.EMPLOYEES, obj_id, True
             )
-            if employee is None:
-                return {}
 
-            return employee
+            return Employee.encode(employee)
         else:
             query_dict = {}
 

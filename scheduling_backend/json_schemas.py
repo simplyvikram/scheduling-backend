@@ -84,15 +84,15 @@ schema_job = {
 }
 
 
-schema_employee_shift = {
+schema_employeeshift = {
     "$schema": schema_type,
     "title": "Employee shift schema",
     "type": "object",
     "properties": {
 
-        BaseModel.Fields._ID: {
-            "type": "string"
-        },
+        # BaseModel.Fields._ID: {
+        #     "type": "string"
+        # },
         EmployeeShift.Fields.EMPLOYEE_ID: {
             "type": "string"
         },
@@ -116,7 +116,7 @@ schema_employee_shift = {
     "additionalProperties": False
 }
 
-schema_job_shift = {
+schema_jobshift = {
     "$schema": schema_type,
     "title": "Employee shift schema",
     "type": "object",
@@ -145,9 +145,9 @@ schema_job_shift = {
             "uniqueItems": True,
             "items": {
                 "type": "object",
-                "properties": schema_employee_shift["properties"],
+                "properties": schema_employeeshift["properties"],
                 "additionalProperties":
-                    schema_employee_shift["additionalProperties"]
+                    schema_employeeshift["additionalProperties"]
             }
 
         }
@@ -184,5 +184,5 @@ if __name__ == "__main__":
 
     import jsonschema
     print "before validation----"
-    jsonschema.validate(_job_shift, schema_job_shift)
+    jsonschema.validate(_job_shift, schema_jobshift)
     print "after validation----"
