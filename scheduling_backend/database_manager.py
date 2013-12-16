@@ -13,6 +13,10 @@ class DatabaseManager(object):
 
     @staticmethod
     def find(collection_name, query_dict={}, multiple=False):
+        """
+        Retuns a dict/list containing the document/documents found in db
+        """
+
 
         if multiple:
             docs = current_app.db[collection_name].find(query_dict)
@@ -20,6 +24,18 @@ class DatabaseManager(object):
         else:
             doc = current_app.db[collection_name].find_one(query_dict)
             return doc
+
+    @staticmethod
+    def find_count(collection_name, query_dict={}):
+        return current_app.db[collection_name].find(query_dict).count
+
+    @staticmethod
+    def insert(collection_name, _dict_or_list):
+        """
+        We insert a single document or a list of documents in the db
+        """
+
+        return current_app.db[collection_name].insert(_dict_or_list)
 
 
     @staticmethod

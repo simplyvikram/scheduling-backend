@@ -67,9 +67,10 @@ class EmployeeHandler(BaseHandler):
         if emp_name == '':
             raise UserException("Employeee name cannot be empty")
 
-        matching_emp_count = current_app.db.employees.find(
+        matching_emp_count = DatabaseManager.find_count(
+            Collection.EMPLOYEES,
             {Employee.Fields.NAME: emp_name}
-        ).count()
+        )
 
         if matching_emp_count > 0:
             raise UserException("Duplicate employee name, choose another name")
@@ -79,11 +80,11 @@ class EmployeeHandler(BaseHandler):
     def get(self, obj_id=None):
 
         if obj_id:
-            employee = DatabaseManager.find_object_by_id(
+            employee_dict = DatabaseManager.find_document_by_id(
                 Collection.EMPLOYEES, obj_id, True
             )
 
-            return Employee.encode(employee)
+            return employee_dict
         else:
             query_dict = {}
 
@@ -103,8 +104,9 @@ class EmployeeHandler(BaseHandler):
                 self._validate_current_role(current_role)
                 query_dict[Employee.Fields.CURRENT_ROLE] = current_role
 
-            employees_cursor = current_app.db.employees.find(query_dict)
-            employee_list = list(employees_cursor)
+            employee_list = DatabaseManager.find(
+                Collection.EMPLOYEES, query_dict, True
+            )
 
             return employee_list
 
@@ -112,38 +114,43 @@ class EmployeeHandler(BaseHandler):
     def post(self):
         # We do this, to make sure, we have all the data we need to create
         # the employee, if not an exception is raised
-        temp = Employee(**self.data)
-        employee_dict = Employee.encode(temp)
+        employee = Employee(**self.data)
+        _dict = Employee.encode(employee)
 
-        obj_id = current_app.db.employees.insert(employee_dict)
+        _id = DatabaseManager.insert(Collection.EMPLOYEES, _dict)
         # todo can the data have an array of employees to be inserted????
-        employee_dict = current_app.db.employees.find_one(
-            {BaseModel.Fields._ID: obj_id}
+        employee_dict = DatabaseManager.find_document_by_id(
+            Collection.EMPLOYEES, _id, True
         )
-
         return employee_dict
 
 
     @marshaling_handler
     def patch(self, obj_id):
 
-        _dict = self.data
+        query_dict = {BaseModel.Fields._ID: obj_id}
+        update_dict = {'$set': self.data}
 
-        current_app.db.employees.update(
-            {BaseModel.Fields._ID: obj_id}, {"$set": _dict}
+        result = DatabaseManager.update(
+            Collection.EMPLOYEES,
+            query_dict,
+            update_dict,
+            multi=False, upsert=False
         )
-        employee = current_app.db.employees.find_one(
-            {BaseModel.Fields._ID: obj_id}
+        employee_dict = DatabaseManager.find_document_by_id(
+            Collection.EMPLOYEES, obj_id, True
         )
-        return employee
-
+        return employee_dict
 
 
     def delete(self, obj_id):
 
-        result = current_app.db.employees.remove(
-            {BaseModel.Fields._ID: obj_id}
+        result = DatabaseManager.remove(
+            Collection.EMPLOYEES,
+            {BaseModel.Fields._ID: obj_id},
+            multiple=False
         )
+
         if not result['err'] and result['n']:
             return '', 204
         else:

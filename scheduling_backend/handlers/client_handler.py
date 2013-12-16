@@ -3,6 +3,7 @@ import flask.ext.restful.types
 
 from flask import current_app as current_app
 
+from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.handlers import marshaling_handler, Params
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
@@ -40,11 +41,12 @@ class ClientHandler(BaseHandler):
         if client_name == '':
             raise UserException("Client name cannot be empty")
 
-        matching_client_count = current_app.db.clients.find(
+        matching_client_count = DatabaseManager.find_count(
+            Collection.CLIENTS,
             {Client.Fields.NAME: client_name}
-        ).count()
+        )
 
-        if matching_client_count > 0:
+        if matching_client_count:
             raise UserException("Duplicate user name, choose another name.")
 
 
@@ -52,16 +54,13 @@ class ClientHandler(BaseHandler):
     def get(self, obj_id=None):
 
         if obj_id:
-            client = current_app.db.clients.find_one(
-                {BaseModel.Fields._ID: obj_id}
+            client_dict = DatabaseManager.find_document_by_id(
+                Collection.CLIENTS, obj_id, True
             )
-            if client is None:
-                return {}
-
-            return client
+            return client_dict
 
         else:
-            query_dict = {}
+            query = {}
             active = self.args.get(Params.ACTIVE, None)
 
             # active is an optional param, it may or may not be present. Hence
@@ -69,12 +68,13 @@ class ClientHandler(BaseHandler):
             # if absent it will be None
 
             if active is True:
-                query_dict[Client.Fields.ACTIVE] = True
+                query[Client.Fields.ACTIVE] = True
             elif active is False:
-                query_dict[Client.Fields.ACTIVE] = False
+                query[Client.Fields.ACTIVE] = False
 
-            clients_cursor = current_app.db.clients.find(query_dict)
-            clients_list = list(clients_cursor)
+            clients_list = DatabaseManager.find(
+                Collection.CLIENTS, query, True
+            )
 
             return clients_list
 
@@ -86,10 +86,10 @@ class ClientHandler(BaseHandler):
         client = Client(**self.data)
         _dict = Client.encode(client)
 
-        obj_id = current_app.db.clients.insert(_dict)
-        # todo can the data have an array of clients to be inserted????
-        client_dict = current_app.db.clients.find_one(
-            {BaseModel.Fields._ID: obj_id}
+        _id = DatabaseManager.insert(Collection.CLIENTS, _dict)
+
+        client_dict = DatabaseManager.find_document_by_id(
+            Collection.CLIENTS, _id, True
         )
 
         return client_dict
@@ -98,22 +98,30 @@ class ClientHandler(BaseHandler):
     @marshaling_handler
     def patch(self, obj_id):
 
-        _dict = self.data
+        query_dict = {BaseModel.Fields._ID: obj_id}
+        update_dict = {'$set': self.data}
 
-        current_app.db.clients.update(
-            {BaseModel.Fields._ID: obj_id}, {'$set': _dict}
+        result = DatabaseManager.update(
+            Collection.CLIENTS,
+            query_dict,
+            update_dict,
+            multi=False, upsert=False
         )
-        client_dict = current_app.db.clients.find_one(
-            {BaseModel.Fields._ID: obj_id}
+
+        client_dict = DatabaseManager.find_document_by_id(
+            Collection.CLIENTS, obj_id, True
         )
         return client_dict
 
 
-    # @marshaling_handler
     def delete(self, obj_id):
 
         # todo can the data have an array of clients to be deleted????
-        result = current_app.db.clients.remove({BaseModel.Fields._ID: obj_id})
+        result = DatabaseManager.remove(
+            Collection.CLIENTS,
+            {BaseModel.Fields._ID: obj_id},
+            multiple=False
+        )
 
         if not result['err'] and result['n']:
             return '', 204

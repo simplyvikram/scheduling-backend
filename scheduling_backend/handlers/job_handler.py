@@ -8,6 +8,9 @@ from flask.ext.restful import Resource
 import flask.ext.restful.types
 
 from scheduling_backend.utils import DateUtils
+from scheduling_backend.database_manager import (
+    DatabaseManager, Collection, JobOperations
+)
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import Params, marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
@@ -33,7 +36,6 @@ class JobHandler(BaseHandler):
         #                              location='args',
         #                              default=False,
         #                              required=False)
-
 
 
         self.args = self.req_parser.parse_args()
@@ -62,24 +64,23 @@ class JobHandler(BaseHandler):
 
         if job_id:
             # Find the job with the matching _id
-            job_dict = current_app.db.jobs.find_one(
-                {BaseModel.Fields._ID: job_id}
+
+            job_dict = DatabaseManager.find_document_by_id(
+                Collection.JOBS, job_id, True
             )
-            if job_dict is None:
-                return {}
 
             # todo uncomment this
             # if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
             #     self._append_jobshift_to_job_response(job_dict)
             self._append_jobshift_to_job_response(job_dict)
 
-
             return job_dict
 
         else:
             # find all jobs
-            jobs_cursor = current_app.db.jobs.find()
-            jobs_list = list(jobs_cursor)
+            jobs_list = DatabaseManager.find(
+                Collection.JOBS, {}, True
+            )
 
             return jobs_list
 
@@ -107,18 +108,23 @@ class JobHandler(BaseHandler):
                                job.scheduled_start_time,
                                job.scheduled_end_time)
 
-        job_dict = current_app.db.jobs.find_one({BaseModel.Fields._ID: job_id})
+        job_dict = DatabaseManager.find_document_by_id(
+            Collection.JOBS, job_id, True
+        )
 
-        if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
-            self._append_jobshift_to_job_response(job_dict)
-
+        # if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
+        #     self._append_jobshift_to_job_response(job_dict)
+        # todo make adding jobshifts back to dependent on url params
+        self._append_jobshift_to_job_response(job_dict)
         return job_dict
 
 
     @marshaling_handler
     def patch(self, job_id):
 
-        job_dict = current_app.db.jobs.find_one({BaseModel.Fields._ID: job_id})
+        job_dict = DatabaseManager.find_document_by_id(
+            Collection.JOBS, job_id, True
+        )
         if not job_dict:
             raise UserException("Invalid job id")
 
@@ -142,27 +148,35 @@ class JobHandler(BaseHandler):
                                                     new_scheduled_end_time)
 
         # make all the necessary patch changes
-        current_app.db.jobs.update(
-            {BaseModel.Fields._ID: job_id},
-            {'$set': _dict}
+        DatabaseManager.update(
+            Collection.JOBS,
+            query_dict={BaseModel.Fields._ID: job_id},
+            update_dict={'$set': _dict},
+            multi=False,
+            upsert=False
         )
+
         self._modify_jobshifts_dates(job_id, new_start_date, new_end_date)
         self._modify_jobshifts_times(job_id,
                                      new_scheduled_start_time,
                                      new_scheduled_end_time)
 
-        # not retrieve all the information about the job and send it back
-        job_dict = current_app.db.jobs.find_one(
-            {BaseModel.Fields._ID: job_id}
+        # now retrieve all the information about the job and send it back
+        job_dict = DatabaseManager.find_document_by_id(
+            Collection.JOBS, job_id, True
         )
-        if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
-            self._append_jobshift_to_job_response(job_dict)
+
+        # if self.args.get(Params.INCLUDE_JOBSHIFTS, False):
+        #     self._append_jobshift_to_job_response(job_dict)
+        # todo make adding jobshifts back to dependent on url params
+        self._append_jobshift_to_job_response(job_dict)
 
         return job_dict
 
 
     def _create_job(self, job):
-        job_id = current_app.db.jobs.insert(Job.encode(job))
+
+        job_id = DatabaseManager.insert(Collection.JOBS, Job.encode(job))
         return job_id
 
 
@@ -175,12 +189,13 @@ class JobHandler(BaseHandler):
                                 job_date=d.isoformat(),
                                 scheduled_start_time=scheduled_start_time_str,
                                 scheduled_end_time=scheduled_end_time_str)
-            jobshifts.append(JobShift.encode(jobshift))
+            jobshift_dict = JobShift.encode(jobshift)
+            jobshifts.append(jobshift_dict)
 
         if not jobshifts:
             return
 
-        current_app.db.jobshifts.insert(jobshifts)
+        DatabaseManager.insert(Collection.JOBSHIFTS, jobshifts)
 
 
     def _get_dates_to_add_and_remove(self, old_start_date, old_end_date,
@@ -245,13 +260,16 @@ class JobHandler(BaseHandler):
         )
 
         dates_to_remove = map(lambda x: x.isoformat(), dates_to_remove)
-        current_app.db.jobshifts.remove(
-            {
+
+        DatabaseManager.remove(
+            Collection.JOBSHIFTS,
+            query_dict={
                 JobShift.Fields.JOB_ID: job_id,
                 JobShift.Fields.JOB_DATE: {"$in": dates_to_remove}
             },
-            justOne=False
+            multiple=True
         )
+
         # We still use the old scheduled start and end times here to create
         # job shifts. If the scheduled start and end times need to be changed
         # they are changed elsewhere
@@ -267,11 +285,15 @@ class JobHandler(BaseHandler):
                     new_scheduled_end_time == g.job.scheduled_end_time):
             return
 
-        current_app.db.jobshifts.update(
-            {JobShift.Fields.JOB_ID: job_id},
-            {"$set": {
-                JobShift.Fields.SCHEDULED_START_TIME: new_scheduled_start_time,
-                JobShift.Fields.SCHEDULED_END_TIME: new_scheduled_end_time}},
+        DatabaseManager.update(
+            Collection.JOBSHIFTS,
+            query_dict={JobShift.Fields.JOB_ID: job_id},
+            update_dict={
+                "$set": {
+                    JobShift.Fields.SCHEDULED_START_TIME: new_scheduled_start_time,
+                    JobShift.Fields.SCHEDULED_END_TIME: new_scheduled_end_time
+                }
+            },
             multi=True,
             upsert=False
         )
@@ -281,23 +303,26 @@ class JobHandler(BaseHandler):
 
         job_id = job_dict[BaseModel.Fields._ID]
 
-        jobshifts = current_app.db.jobshifts.find(
-            {JobShift.Fields.JOB_ID: job_id}
+        jobshifts = DatabaseManager.find(
+            Collection.JOBSHIFTS,
+            query_dict={JobShift.Fields.JOB_ID: job_id},
+            multiple=True
         )
-
-        jobshifts = list(jobshifts)
         job_dict["jobshifts"] = jobshifts
 
 
     def delete(self, job_id):
 
         # todo what if the first delete fails. Oh shitttt ;-)
-        result = current_app.db.jobshifts.remove(
+        result = DatabaseManager.remove(
+            Collection.JOBSHIFTS,
             {JobShift.Fields.JOB_ID: job_id},
-            justOne=False
+            multiple=True
         )
-        result = current_app.db.jobs.remove(
-            {BaseModel.Fields._ID: job_id}
+        result = DatabaseManager.remove(
+            Collection.JOBS,
+            {BaseModel.Fields._ID: job_id},
+            multiple=False
         )
 
         if not result['err'] and result['n']:
