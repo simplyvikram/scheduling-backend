@@ -27,7 +27,7 @@ class DatabaseManager(object):
 
     @staticmethod
     def find_count(collection_name, query_dict={}):
-        return current_app.db[collection_name].find(query_dict).count
+        return current_app.db[collection_name].find(query_dict).count()
 
     @staticmethod
     def insert(collection_name, _dict_or_list):

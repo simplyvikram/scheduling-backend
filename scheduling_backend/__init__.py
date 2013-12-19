@@ -132,6 +132,7 @@ def register_views(app):
         MoveEmployeeAcrossJobshifts,
         ModifyEmployeeShiftHandler
     )
+    from handlers.date_handler import DateHandler
     from handlers import RoleHandler
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
@@ -148,27 +149,13 @@ def register_views(app):
     api.add_resource(JobHandler, '/jobs/<ObjectId:job_id>', endpoint="job")
     api.add_resource(JobHandler, '/jobs', endpoint="jobs")
 
-    # todo show all jobshifts for today
-    api.add_resource(JobShiftHandler, '/jobshifts/date/<string:job_date>',
-                     endpoint="jobshifts_for_date")
 
-
-    # GET
-    # DELETE, delete would also delete associated employee shifts
-    # No POST, jobshifts are created while creating/changing jobs
+    # only PATCH and GET supported
+    # Jobshift creation/deletion is only done when jobs are created/deleted
     # PATCH would change a job shift
     api.add_resource(JobShiftHandler,
                      '/jobshifts/<ObjectId:jobshift_id>',
                      endpoint="jobshift")
-    # api.add_resource(JobShiftHandler,
-    #                  '/job/<ObjectId:job_id>/jobshifts',
-    #                  endpoint="jobsshifts")
-
-    # # # POST with no data, returns created Employee Shift
-    # api.add_resource('/jobshifts/<ObjectId:job_shift_id>'
-    #                  '/employee/<ObjectId:employee_id>',
-    #                  endpoint="createemployeeshift")
-
 
     api.add_resource(AddEmployeeShiftHandler,
                      '/add'
@@ -196,13 +183,9 @@ def register_views(app):
                      endpoint="modifyemployeeshift")
 
 
-    # todo for a given date give me a list of employees with employeeids
-    # todo and for the employees not scheduled return null for employeeids
-
-    # todo
-    # /date/<date>/employees
-    # /date/<date>/jobs
-    # /date/<date>/jobshifts
+    api.add_resource(DateHandler,
+                     '/<string:collection_name>/date/<string:_date>',
+                     endpoint="date_operations")
 
 
     # todo finish url for copy job shifts for date range

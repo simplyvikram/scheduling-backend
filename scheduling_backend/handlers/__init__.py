@@ -37,6 +37,10 @@ def marshaling_handler(func):
             inst.data = JsonUtils.change_all_str_objectids_to_objectids(
                 inst.data
             )
+            inst.data = \
+                JsonUtils.change_all_date_time_to_include_leading_zeros(
+                    inst.data
+                )
 
         resp = func(inst, *args, **kwargs)
 

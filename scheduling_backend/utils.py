@@ -52,6 +52,22 @@ class JsonUtils(object):
         )
         return obj_new
 
+    @staticmethod
+    def change_all_date_time_to_include_leading_zeros(obj):
+
+        for key, value in obj.items():
+
+            if key.endswith('_date'):
+                temp = DateUtils.to_datetime_format(value, DateUtils.DATE)
+                obj[key] = temp.isoformat()
+            elif key.endswith('_time'):
+                temp = DateUtils.to_datetime_format(value, DateUtils.TIME)
+                obj[key] = temp.isoformat()
+            elif key.endswith('_datetime'):
+                temp = DateUtils.to_datetime_format(value, DateUtils.DATETIME)
+                obj[key] = temp.isoformat()
+
+        return obj
 
     @staticmethod
     def validate_json(data, schema):
