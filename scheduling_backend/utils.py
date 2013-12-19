@@ -105,6 +105,7 @@ class DateUtils(object):
         you need
         """
         _datetime = datetime.strptime(str, DateUtils.FORMATS[type_of_datetime])
+
         if type_of_datetime == DateUtils.DATE:
             return _datetime.date()
         elif type_of_datetime == DateUtils.TIME:
