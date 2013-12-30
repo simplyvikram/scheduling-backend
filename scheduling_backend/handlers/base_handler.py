@@ -81,7 +81,7 @@ class BaseHandler(Resource):
                 "use patch instead, and only send fields which have changed"
         }
 
-    # @staticmethod
+
     def validate_start_and_end_dates(
             self, start_date_str, end_date_str
     ):
@@ -100,7 +100,7 @@ class BaseHandler(Resource):
             raise UserException("Start/from date needs to be "
                                 "less than end/to date")
 
-    # @staticmethod
+
     def validate_scheduled_start_and_end_times(
             self, scheduled_start_time_str, scheduled_end_time_str
     ):
