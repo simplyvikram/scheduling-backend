@@ -85,7 +85,6 @@ class JobHandler(BaseHandler):
             return jobs_list
 
 
-    # @common_handler
     @marshaling_handler
     def post(self):
         # We create a job object to make sure we have all the data we need
@@ -93,10 +92,12 @@ class JobHandler(BaseHandler):
 
         job = Job(**self.data)
 
-        self.validate_start_and_end_dates(job.start_date,
-                                          job.end_date)
-        self.validate_scheduled_start_and_end_times(job.scheduled_start_time,
-                                                    job.scheduled_end_time)
+        self.validate_start_and_end_dates(
+            job.start_date, job.end_date
+        )
+        self.validate_scheduled_start_and_end_times(
+            job.scheduled_start_time, job.scheduled_end_time
+        )
 
         # todo sort out the sat/sun part later
         date_list = DateUtils.get_dates_in_range(job.start_date, job.end_date,
@@ -143,9 +144,12 @@ class JobHandler(BaseHandler):
         new_scheduled_end_time = _dict.get(Job.Fields.SCHEDULED_END_TIME,
                                            found_job.scheduled_end_time)
 
-        self.validate_start_and_end_dates(new_start_date, new_end_date)
-        self.validate_scheduled_start_and_end_times(new_scheduled_start_time,
-                                                    new_scheduled_end_time)
+        self.validate_start_and_end_dates(
+            new_start_date, new_end_date
+        )
+        self.validate_scheduled_start_and_end_times(
+            new_scheduled_start_time, new_scheduled_end_time
+        )
 
         # make all the necessary patch changes
         DatabaseManager.update(

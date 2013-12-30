@@ -16,6 +16,8 @@ class Params(object):
     JOB_ID = "job_id"
     FROM_DATE = "from_date"
     TO_DATE = "to_date"
+    INCLUDE_SATURDAY = "include_saturday"
+    INCLUDE_SUNDAY = "include_sunday"
 
 
 def marshaling_handler(func):

@@ -98,6 +98,23 @@ class DateUtils(object):
     }
 
     @staticmethod
+    def is_saturday(date_str):
+
+        _date = DateUtils.to_datetime_format(date_str, DateUtils.DATE)
+        return _date.isoweekday() == 6
+
+    @staticmethod
+    def is_sunday(date_str):
+        _date = DateUtils.to_datetime_format(date_str, DateUtils.DATE)
+        return _date.isoweekday() == 7
+
+    @staticmethod
+    def is_weekday(date_str):
+        _date = DateUtils.to_datetime_format(date_str, DateUtils.DATE)
+
+        return _date.isoweekday() in range(1, 6)
+
+    @staticmethod
     def to_datetime_format(str, type_of_datetime):
         """
         returns a datetime object, use date() or time() to convert it to a date
@@ -123,7 +140,6 @@ class DateUtils(object):
         Returns a list of date objects between start and end dates(inclusive of
         both start and end dates)
         """
-
         date_format = DateUtils.FORMATS[DateUtils.DATE]
 
         _d = datetime.strptime(start_date_str, date_format)
@@ -135,10 +151,15 @@ class DateUtils(object):
         dates = []
         while (end_date - current_date).total_seconds() >= 0:
             # print "current date-------", current_date
+            _date_str = current_date.isoformat()
             if (
-                    (current_date.isoweekday() in range(1, 6)) or
-                    (current_date.isoweekday() == 6 and include_saturday) or
-                    (current_date.isoweekday() == 7 and include_sunday)
+                (DateUtils.is_weekday(_date_str)) or
+                (DateUtils.is_saturday(_date_str) and include_saturday) or
+                (DateUtils.is_sunday(_date_str) and include_sunday)
+
+                        # (current_date.isoweekday() in range(1, 6)) or
+                        # (current_date.isoweekday() == 6 and include_saturday) or
+                        # (current_date.isoweekday() == 7 and include_sunday)
             ):
 
                 dates.append(current_date)

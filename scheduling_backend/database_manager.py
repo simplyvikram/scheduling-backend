@@ -121,6 +121,28 @@ class JobOperations(object):
         if jobshift_dict:
             return JobShift(**jobshift_dict)
 
+    @staticmethod
+    def find_jobshift_ids_for_day(date_str):
+
+        d = current_app.db[Collection.JOBSHIFTS].aggregate(
+            [
+                {
+                    '$match': {JobShift.Fields.JOB_DATE: date_str}
+                }
+                ,
+                {
+                    '$project': {BaseModel.Fields._ID: 1}
+                }
+            ]
+        )
+        result = d['result']
+
+        result = map(lambda x: x[BaseModel.Fields._ID],
+                     result)
+
+        return result
+
+
 
     @staticmethod
     def find_jobshift_by_id_and_employee_id(_id, employee_id):

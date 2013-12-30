@@ -133,6 +133,10 @@ def register_views(app):
         ModifyEmployeeShiftHandler
     )
     from handlers.date_handler import DateHandler
+    from handlers.copy_jobshift_handler import (
+        CopyJobshiftHandler,
+        CopyAllJobshiftsHandler
+    )
     from handlers import RoleHandler
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
@@ -182,24 +186,24 @@ def register_views(app):
                      '/jobshift/<ObjectId:jobshift_id>',
                      endpoint="modifyemployeeshift")
 
-
     api.add_resource(DateHandler,
                      '/<string:collection_name>/date/<string:_date>',
                      endpoint="date_operations")
 
-
+    # mustHaveparams - include_sunday, include_saturday
+    api.add_resource(CopyJobshiftHandler,
+                     '/copy'
+                     '/jobshift/<ObjectId:jobshift_id>'
+                     '/fromdate/<string:from_date>'
+                     '/todate/<string:to_date>')
     # todo finish url for copy job shifts for date range
-    # api.add_resource(JobShiftHandler,
-    #                  '/copyjobshift/<ObjectId:jobshift_id')
-    #
-    # post_copy_job_shifts = 'jobshift/<ObjectId:jobshift_id>/copy'
-    # post_copy_job_shifts_params = '?' + 'fromdate' + '=XXXX' + '&' + 'todate' + '=YYY'
 
-    # todo whenever jobshifts are created create all jobshifts incl sat/sun
-    # during copy just skip over sat/sun unless specified by params
-
-    # todo copy a job shift for date range(start date, end date)
-
+    # mustHaveparams - include_sunday, include_saturday
+    api.add_resource(CopyAllJobshiftsHandler,
+                     '/copy'
+                     '/alljobshifts/for_date/<string:for_date>'
+                     '/from_date/<string:from_date>'
+                     '/to_date/<string:to_date>')
 
     api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
 

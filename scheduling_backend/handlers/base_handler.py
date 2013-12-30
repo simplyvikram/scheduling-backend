@@ -81,13 +81,15 @@ class BaseHandler(Resource):
                 "use patch instead, and only send fields which have changed"
         }
 
-
-    def validate_start_and_end_dates(self, start_date_str, end_date_str):
+    # @staticmethod
+    def validate_start_and_end_dates(
+            self, start_date_str, end_date_str
+    ):
         """
         If end date is less than start date we raise an exception
         """
         if not start_date_str or not end_date_str:
-            raise UserException("Start/end dates cannot be empty")
+            raise UserException("Start/end/from/to dates cannot be empty")
 
         start_date = DateUtils.to_datetime_format(start_date_str,
                                                   DateUtils.DATE)
@@ -95,13 +97,13 @@ class BaseHandler(Resource):
                                                 DateUtils.DATE)
 
         if (end_date - start_date).days < 0:
-            raise UserException("Start date needs to be less than end date")
+            raise UserException("Start/from date needs to be "
+                                "less than end/to date")
 
-
-
-    def validate_scheduled_start_and_end_times(self,
-                                               scheduled_start_time_str,
-                                               scheduled_end_time_str):
+    # @staticmethod
+    def validate_scheduled_start_and_end_times(
+            self, scheduled_start_time_str, scheduled_end_time_str
+    ):
         """
         If endtime is less than start time we raise an exception
         """
