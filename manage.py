@@ -1,7 +1,8 @@
 
 import os
 
-from flask_script import Manager, Server
+from flask_script import Manager, Server, Option
+from flask_script.commands import Command
 
 from scheduling_backend import app_name, create_app
 
@@ -15,12 +16,62 @@ app = create_app(
 )
 
 manager = Manager(app)
-manager.add_command("runserver", Server())
 
 
 @manager.command
 def hello():
+    """
+    Just print whatever
+    """
     print "Whatever"
+
+
+class GunicornServer(Command):
+
+    description = 'Run the app within Gunicorn'
+
+    def __init__(self, host='127.0.0.1', port=5000, workers=4):
+        self.port = port
+        self.host = host
+        self.workers = workers
+
+    def get_options(self):
+        return (
+            Option('-H', '--host',
+                   dest='host',
+                   default=self.host),
+
+            Option('-p', '--port',
+                   dest='port',
+                   type=int,
+                   default=self.port),
+
+            Option('-w', '--workers',
+                   dest='workers',
+                   type=int,
+                   default=self.workers),
+        )
+
+    def handle(self, app, host, port, workers):
+
+        from gunicorn.app.base import Application
+
+        class FlaskApplication(Application):
+            def init(self, parser, opts, args):
+                return {
+                    'bind': '{0}:{1}'.format(host, port),
+                    'workers': workers
+                }
+
+            def load(self):
+                return app
+
+        FlaskApplication().run()
+
+
+manager.add_command("runserver", Server())
+manager.add_command('gunicornserver', GunicornServer())
+
 
 if __name__ == '__main__':
     manager.run()
