@@ -30,7 +30,9 @@ class GunicornServer(Command):
 
     description = 'Run the app within Gunicorn'
 
-    def __init__(self, host='127.0.0.1', port=5000, workers=4):
+    # only use 0.0.0.0 and not localhost or 127.0.0.1 as 0.0.0.0 makes it
+    # globally accessible by all ipv4 addresses
+    def __init__(self, host='0.0.0.0', port=5000, workers=4):
         self.port = port
         self.host = host
         self.workers = workers
@@ -69,8 +71,8 @@ class GunicornServer(Command):
         FlaskApplication().run()
 
 
-manager.add_command("runserver", Server())
-manager.add_command('gunicornserver', GunicornServer())
+manager.add_command("run-server", Server())
+manager.add_command('run-gunicorn-server', GunicornServer())
 
 
 if __name__ == '__main__':
