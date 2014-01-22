@@ -71,7 +71,7 @@ class GunicornServer(Command):
         FlaskApplication().run()
 
 
-manager.add_command("run-server", Server())
+manager.add_command("run-server", Server(host='0.0.0.0', port=5000))
 manager.add_command('run-gunicorn-server', GunicornServer())
 
 
