@@ -60,9 +60,15 @@ class GunicornServer(Command):
 
         class FlaskApplication(Application):
             def init(self, parser, opts, args):
+
+                # todo for some reason there is no stack trace for gunicorn
+                # debug flag doesnt seem to do the trick,
+                # keeping it there for now
+                # use default flask server to see trace
                 return {
                     'bind': '{0}:{1}'.format(host, port),
-                    'workers': workers
+                    'workers': workers,
+                    # 'debug': True
                 }
 
             def load(self):
