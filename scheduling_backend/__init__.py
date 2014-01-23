@@ -210,6 +210,8 @@ def register_views(app):
     from views import views
     app.register_blueprint(views)
 
+    app.handle_user_exception = api.handle_error
+
 
 def enable_logging(app):
     formatter = logging.Formatter(

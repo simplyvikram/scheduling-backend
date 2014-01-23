@@ -16,10 +16,16 @@ class UserException(Exception):
 
 def generate_REST_exception(e):
     if type(e) == UserException:
+
+        print "Intercepting flask exception and generating a restful one-----",\
+            str(e)
+
         return e
     else:
         # Some exception raised somewhere down the request path, return some
         # readable message
         # todo log this appropriately
+
+        print "Caught Flask exception------", str(e)
         return UserException(str(e), 400)
 
