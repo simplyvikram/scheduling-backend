@@ -182,8 +182,8 @@ def register_views(app):
 
     api.add_resource(ModifyEmployeeShiftHandler,
                      '/modify'
-                     '/employee/<ObjectId:employee_id>'
-                     '/jobshift/<ObjectId:jobshift_id>',
+                     '/jobshift/<ObjectId:jobshift_id>'
+                     '/employee/<ObjectId:employee_id>',
                      endpoint="modifyemployeeshift")
 
     api.add_resource(DateHandler,

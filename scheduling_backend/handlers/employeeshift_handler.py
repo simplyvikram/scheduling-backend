@@ -5,10 +5,11 @@ from scheduling_backend.database_manager import (
     JobOperations
 )
 
+from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employeeshift
-
+from scheduling_backend.models import EmployeeShift
 
 class AddEmployeeShiftHandler(BaseHandler):
 
@@ -63,13 +64,31 @@ class ModifyEmployeeShiftHandler(BaseHandler):
     def __init__(self):
         super(ModifyEmployeeShiftHandler, self).__init__(schema_employeeshift)
 
-    @marshaling_handler
-    def patch(self, employee_id, jobshift_id):
+    def preprocess_PATCH(self):
+        employee_id = self.data.get(EmployeeShift.Fields.EMPLOYEE_ID, None)
+        if employee_id:
+            raise UserException("employee id cannot be present as"
+                                " part of patch data")
 
-        # todo implement later
-        return {
-            "class": "ModifyEmployeeShiftHandler",
-            "method": "patch",
-            "employee_id": employee_id,
-            "jobshift_id": jobshift_id
-        }
+    @marshaling_handler
+    def patch(self, jobshift_id, employee_id):
+
+        jobshift = JobOperations.find_jobshift_by_id_and_employee_id(
+            jobshift_id, employee_id
+        )
+
+        if not jobshift:
+            msg = "The employee _id:%s is not scheduled for jobshift " \
+                  "_id: %s. Please add him to the jobshift first" % \
+                  (employee_id, jobshift_id)
+
+            raise UserException(msg)
+
+        JobOperations.modify_employee_shift(
+            employee_id, jobshift_id, self.data
+        )
+
+        jobshift_dict = DatabaseManager.find_document_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
+        return jobshift_dict

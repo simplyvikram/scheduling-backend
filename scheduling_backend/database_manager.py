@@ -250,6 +250,36 @@ class JobOperations(object):
                                         multi=False, upsert=False)
         return result
 
+
+    @staticmethod
+    def modify_employee_shift(employee_id, jobshift_id, data):
+        """
+        Based on
+        http://mongoblog.tumblr.com/post/21792332279/updating-one-element-in-an-array
+        """
+        query_key_prefix = JobShift.Fields.EMPLOYEE_SHIFTS + "."
+        update_key_prefix = JobShift.Fields.EMPLOYEE_SHIFTS + ".$."
+
+        query = {
+            BaseModel.Fields._ID: jobshift_id,
+            query_key_prefix + EmployeeShift.Fields.EMPLOYEE_ID: employee_id
+        }
+
+        update_dict = dict()
+        for key, value in data.iteritems():
+            update_dict[update_key_prefix + key] = value
+
+        update = {
+            "$set": update_dict
+        }
+
+        DatabaseManager.update(Collection.JOBSHIFTS,
+                               query,
+                               update,
+                               multi=False,
+                               upsert=False)
+
+
     @staticmethod
     def add_employee_to_jobshift(employee_id, jobshift_id):
         """
