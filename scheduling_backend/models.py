@@ -217,7 +217,10 @@ class JobShift(BaseModel):
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
 
-        self.employee_shifts = employee_shifts
+        self.employee_shifts = map(
+            lambda _dict: EmployeeShift(**_dict),
+            employee_shifts
+        )
 
 
     @classmethod
