@@ -8,6 +8,7 @@ gunicorn==18.0
 itsdangerous==0.23
 jsonschema==2.3.0
 py==1.4.17
+pyOpenSSL==0.13.1
 pymongo==2.6.3
 pytest==2.4.2
 six==1.4.1

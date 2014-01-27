@@ -77,8 +77,14 @@ class GunicornServer(Command):
         FlaskApplication().run()
 
 
-manager.add_command("run-server", Server(host='0.0.0.0', port=5000))
-manager.add_command('run-gunicorn-server', GunicornServer())
+@manager.command
+def run_server():
+    app.run(host='0.0.0.0', port=5000)
+            # debug=True,
+            # ssl_context=('server.crt', 'server.key'))
+
+# manager.add_command("run-server", Server(host='0.0.0.0', port=5000))
+manager.add_command('run_gunicorn_server', GunicornServer())
 
 
 if __name__ == '__main__':

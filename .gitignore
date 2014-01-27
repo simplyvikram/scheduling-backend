@@ -1,2 +1,4 @@
 *.pyc
+*.crt
+*.key
 .idea/*
