@@ -138,6 +138,9 @@ def register_views(app):
         CopyAllJobshiftsHandler
     )
     from handlers import RoleHandler
+    from handlers.reporting_handler import (
+        HoursWorkedPerEmployeeHandler
+    )
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
                      endpoint="client")
@@ -206,6 +209,12 @@ def register_views(app):
                      '/to_date/<string:to_date>')
 
     api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
+
+    api.add_resource(HoursWorkedPerEmployeeHandler,
+                     '/reporting'
+                     '/hoursworkedperemployee'
+                     '/from_date/<string:from_date_str>'
+                     '/to_date/<string:to_date_str>')
 
     from views import views
     app.register_blueprint(views)

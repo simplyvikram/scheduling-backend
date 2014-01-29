@@ -93,14 +93,45 @@ class DatabaseManager(object):
         if not document:
             return
 
+        return DatabaseManager.convert_document_to_object(
+            collection_name, document
+        )
+
+
+    @staticmethod
+    def find_documents_by_ids(collection_name, _id_list):
+        query = {
+            BaseModel.Fields._ID: {'$in': _id_list}
+        }
+        documents = DatabaseManager.find(collection_name, query, multiple=True)
+        return documents
+
+    @staticmethod
+    def find_objects_by_ids(collection_name, _id_list):
+        documents = DatabaseManager.find_documents_by_ids(
+            collection_name, _id_list
+        )
+
+        objects = map(
+            lambda document: DatabaseManager.convert_document_to_object(
+                collection_name, document
+            ),
+            documents
+        )
+        return objects
+
+
+    @staticmethod
+    def convert_document_to_object(collection_type, document):
         _dict = {
-            Collection.CLIENTS: Client,
+
             Collection.JOBSHIFTS: JobShift,
             Collection.EMPLOYEES: Employee,
+            Collection.CLIENTS: Client,
             Collection.JOBS: Job
         }
+        return _dict[collection_type](**document)
 
-        return _dict[collection_name](**document)
 
 
 class JobOperations(object):
@@ -146,6 +177,10 @@ class JobOperations(object):
 
     @staticmethod
     def find_jobshift_by_id_and_employee_id(_id, employee_id):
+        """
+        Finds a jobshift with a given _id, such that an employee with _id
+        employee_id is is part of the jobshift's employeeshifts
+        """
 
         query = {
             BaseModel.Fields._ID: _id,
@@ -160,6 +195,23 @@ class JobOperations(object):
 
         if jobshift_dict:
             return JobShift(**jobshift_dict)
+
+    @staticmethod
+    def find_jobshifts_for_dates(dates):
+
+        dates = map(lambda date: date.isoformat(), dates)
+        query = {
+            JobShift.Fields.JOB_DATE: {'$in': dates}
+        }
+
+        jobshift_documents = DatabaseManager.find(
+            Collection.JOBSHIFTS, query, multiple=True
+        )
+
+        jobshifts = map(lambda document: JobShift(**document),
+                        jobshift_documents)
+
+        return jobshifts
 
 
     @staticmethod

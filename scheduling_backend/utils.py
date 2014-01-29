@@ -97,6 +97,20 @@ class DateUtils(object):
         DATETIME: _date_format + "T" + _time_format
     }
 
+    ISO_WEEKDAY_STRING_WEEKDAY_DICT = {
+        1: "Monday", 2: "Tuesday", 3: "Wednesday",
+        4: "Thursday", 5: "Friday", 6: "Saturday",
+        7: "Sunday"
+    }
+
+    @staticmethod
+    def get_day_string(date_str):
+        dt = datetime.strptime(
+            date_str, DateUtils.FORMATS[DateUtils.DATE]
+        )
+        return DateUtils.ISO_WEEKDAY_STRING_WEEKDAY_DICT[dt.isoweekday()]
+
+
     @staticmethod
     def is_saturday(date_str):
 
@@ -132,13 +146,20 @@ class DateUtils(object):
 
 
     @staticmethod
+    def get_datetime_from_time(time_str):
+
+        _datetime = datetime.strptime(time_str,
+                                      DateUtils.FORMATS[DateUtils.TIME])
+        return _datetime
+
+    @staticmethod
     def get_dates_in_range(start_date_str,
                            end_date_str,
                            include_saturday=False,
                            include_sunday=False):
         """
         Returns a list of date objects between start and end dates(inclusive of
-        both start and end dates)
+        both start and end dates).
         """
         date_format = DateUtils.FORMATS[DateUtils.DATE]
 
