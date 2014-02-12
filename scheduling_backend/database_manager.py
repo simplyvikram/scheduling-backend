@@ -197,12 +197,13 @@ class JobOperations(object):
             return JobShift(**jobshift_dict)
 
     @staticmethod
-    def find_jobshifts_for_dates(dates):
+    def find_jobshifts_for_dates(dates_strings, job_id=None):
 
-        dates = map(lambda date: date.isoformat(), dates)
         query = {
-            JobShift.Fields.JOB_DATE: {'$in': dates}
+            JobShift.Fields.JOB_DATE: {'$in': dates_strings}
         }
+        if job_id:
+            query[JobShift.Fields.JOB_ID] = job_id
 
         jobshift_documents = DatabaseManager.find(
             Collection.JOBSHIFTS, query, multiple=True
@@ -213,6 +214,8 @@ class JobOperations(object):
 
         return jobshifts
 
+    # @staticmethod
+    # def find_jobshifts_for_dates(jobshift_id):
 
     @staticmethod
     def _can_we_remove_employee_from_jobshift(employee_id,
@@ -283,10 +286,10 @@ class JobOperations(object):
 
 
     @staticmethod
-    def _force_add_employeeshift(employee_id, jobshift_id):
+    def _force_add_employeeshift(employee_id, jobshift_id, shift_role):
 
         employeeshift_dict = EmployeeShift.encode(
-            EmployeeShift(employee_id, None, None, None, None)
+            EmployeeShift(employee_id, shift_role, None, None, None, None)
         )
 
         query = {
@@ -306,6 +309,9 @@ class JobOperations(object):
     @staticmethod
     def modify_employee_shift(employee_id, jobshift_id, data):
         """
+        Update only one employeeshift in a jobshift,
+        and that too with the relevant data
+
         Based on
         http://mongoblog.tumblr.com/post/21792332279/updating-one-element-in-an-array
         """
@@ -333,18 +339,21 @@ class JobOperations(object):
 
 
     @staticmethod
-    def add_employee_to_jobshift(employee_id, jobshift_id):
+    def add_employee_to_jobshift(employee_id, jobshift_id, shift_role):
         """
         This method guarantees that the employee can only be added to
         at most one jobshift for each date
         """
         # We check for existence of employee and jobshift
-        DatabaseManager.find_object_by_id(
+        employee = DatabaseManager.find_object_by_id(
             Collection.EMPLOYEES, employee_id, True
         )
         jobshift = DatabaseManager.find_object_by_id(
             Collection.JOBSHIFTS, jobshift_id, True
         )
+
+        if not shift_role:
+            shift_role = employee.current_role
 
         JobOperations._employee_active_to_be_scheduled(employee_id)
         JobOperations._can_we_schedule_employee_for_jobshift(employee_id,
@@ -352,8 +361,9 @@ class JobOperations(object):
         JobOperations._can_we_schedule_employee_for_date(employee_id,
                                                          jobshift.job_date)
 
-        return JobOperations._force_add_employeeshift(employee_id,
-                                                      jobshift_id)
+        return JobOperations._force_add_employeeshift(
+            employee_id, jobshift_id, shift_role
+        )
 
     @staticmethod
     def remove_employee_from_jobshift(employee_id, jobshift_id):
@@ -377,13 +387,14 @@ class JobOperations(object):
     @staticmethod
     def move_employee_amongst_jobshifts(employee_id,
                                         from_jobshift_id,
-                                        to_jobshift_id):
+                                        to_jobshift_id,
+                                        shift_role):
 
         if from_jobshift_id == to_jobshift_id:
             raise UserException("Both jobshift _id's are the same")
 
         # we check existence of employee and jobshifts
-        DatabaseManager.find_object_by_id(
+        employee = DatabaseManager.find_object_by_id(
             Collection.EMPLOYEES, employee_id, True
         )
         from_jobshift = DatabaseManager.find_object_by_id(
@@ -404,11 +415,14 @@ class JobOperations(object):
                 employee_id, to_jobshift.job_date
             )
 
+        if not shift_role:
+            shift_role = employee.current_role
+
         remove_result = JobOperations._force_remove_employeeshift(
             employee_id, from_jobshift_id
         )
         add_result = JobOperations._force_add_employeeshift(
-            employee_id, to_jobshift_id
+            employee_id, to_jobshift_id, shift_role
         )
         # todo figure out what to do with the results
         # todo what to do if one fails

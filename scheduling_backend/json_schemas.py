@@ -96,6 +96,9 @@ schema_employeeshift = {
         EmployeeShift.Fields.EMPLOYEE_ID: {
             "type": "string"
         },
+        EmployeeShift.Fields.SHIFT_ROLE: {
+            "type": "string"
+        },
         EmployeeShift.Fields.SCHEDULED_START_TIME: {
             "type": "string",
             "format": "time"

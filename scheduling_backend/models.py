@@ -134,19 +134,20 @@ class Job(BaseModel):
 
 
 class EmployeeShift(object):
-    # caution we inherit this from model instead of object as this is
+    # caution we inherit this from object instead of BaseModel as this is
     # included as part of jobshift and does not need an _id
     class Fields(object):
 
         EMPLOYEE_ID = "employee_id"
+        SHIFT_ROLE = "shift_role"
 
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
-
         ACTUAL_START_TIME = "actual_start_time"
         ACTUAL_END_TIME = "actual_end_time"
 
     def __init__(self, employee_id,
+                 shift_role,
                  scheduled_start_time,
                  scheduled_end_time,
                  actual_start_time=None,
@@ -159,6 +160,7 @@ class EmployeeShift(object):
         super(EmployeeShift, self).__init__()
         # todo ask shaheen about above
         self.employee_id = employee_id
+        self.shift_role = shift_role
 
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
@@ -170,6 +172,8 @@ class EmployeeShift(object):
     def encode(cls, employeeshift):
         d = {
             EmployeeShift.Fields.EMPLOYEE_ID: employeeshift.employee_id,
+
+            EmployeeShift.Fields.SHIFT_ROLE: employeeshift.shift_role,
 
             EmployeeShift.Fields.SCHEDULED_START_TIME:
                 employeeshift.scheduled_start_time,

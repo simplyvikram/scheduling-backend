@@ -13,6 +13,7 @@ class Params(object):
     INCLUDE_EMPLOYEESHIFTS = "includeemployeeshifts"
     ACTIVE = "active"
     CURRENT_ROLE = "current_role"
+    SHIFT_ROLE = "shift_role"
     JOB_ID = "job_id"
     FROM_DATE = "from_date"
     TO_DATE = "to_date"

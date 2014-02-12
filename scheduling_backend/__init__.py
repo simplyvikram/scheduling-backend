@@ -67,6 +67,9 @@ class ApiBase(Api):
 
 class BsonObjectIdConverter(BaseConverter):
     """
+    This is used to convert ObjectId's present in urls in string format to
+    ObjectId objects we need in the respective url handlers
+
     Based on
     http://flask.pocoo.org/snippets/106/
     https://github.com/dcrosta/flask-pymongo/blob/master/flask_pymongo/__init__.py
@@ -139,7 +142,8 @@ def register_views(app):
     )
     from handlers import RoleHandler
     from handlers.reporting_handler import (
-        HoursWorkedPerEmployeeHandler
+        HoursWorkedPerEmployeeHandler,
+        HoursWorkedPerShiftRole
     )
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
@@ -164,18 +168,22 @@ def register_views(app):
                      '/jobshifts/<ObjectId:jobshift_id>',
                      endpoint="jobshift")
 
+    # params shift_role, if absent use employee's current role
     api.add_resource(AddEmployeeShiftHandler,
                      '/add'
                      '/employee/<ObjectId:employee_id>'
                      '/jobshift/<ObjectId:jobshift_id>',
                      endpoint="addemployeeshift")
 
+
+    # add/employee/22/jobshift/400
     api.add_resource(RemoveEmployeeShiftHandler,
                      '/remove'
                      '/employee/<ObjectId:employee_id>'
                      '/jobshift/<ObjectId:jobshift_id>',
                      endpoint="removeemployeeshift")
 
+    # params shift_role, if absent use employee's shift role
     api.add_resource(MoveEmployeeAcrossJobshifts,
                      '/move'
                      '/employee/<ObjectId:employee_id>'
@@ -183,6 +191,7 @@ def register_views(app):
                      '/tojobshift/<ObjectId:to_jobshift_id>',
                      endpoint="moveemployeeshift")
 
+    # add ability to modify role too
     api.add_resource(ModifyEmployeeShiftHandler,
                      '/modify'
                      '/jobshift/<ObjectId:jobshift_id>'
@@ -193,20 +202,19 @@ def register_views(app):
                      '/<string:collection_name>/date/<string:_date>',
                      endpoint="date_operations")
 
-    # mustHaveparams - include_sunday, include_saturday
+    # params - include_sunday, include_saturday
     api.add_resource(CopyJobshiftHandler,
                      '/copy'
                      '/jobshift/<ObjectId:jobshift_id>'
-                     '/fromdate/<string:from_date>'
-                     '/todate/<string:to_date>')
-    # todo finish url for copy job shifts for date range
+                     '/fromdate/<string:from_date_str>'
+                     '/todate/<string:to_date_str>')
 
-    # mustHaveparams - include_sunday, include_saturday
+    # params - include_sunday, include_saturday
     api.add_resource(CopyAllJobshiftsHandler,
                      '/copy'
-                     '/alljobshifts/for_date/<string:for_date>'
-                     '/from_date/<string:from_date>'
-                     '/to_date/<string:to_date>')
+                     '/alljobshifts/for_date/<string:for_date_str>'
+                     '/from_date/<string:from_date_str>'
+                     '/to_date/<string:to_date_str>')
 
     api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
 
@@ -215,6 +223,13 @@ def register_views(app):
                      '/hoursworkedperemployee'
                      '/from_date/<string:from_date_str>'
                      '/to_date/<string:to_date_str>')
+
+    # params - from_date, to_date
+    api.add_resource(HoursWorkedPerShiftRole,
+                     '/reporting'
+                     '/hoursworkedpershiftrole'
+                     '/job/<ObjectId:job_id>')
+
 
     from views import views
     app.register_blueprint(views)

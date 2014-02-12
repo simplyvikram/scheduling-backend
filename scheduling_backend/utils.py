@@ -105,6 +105,10 @@ class DateUtils(object):
 
     @staticmethod
     def get_day_string(date_str):
+        """
+        Given an iso date string returns Monday, Tuesday etc depending on
+        the day it is
+        """
         dt = datetime.strptime(
             date_str, DateUtils.FORMATS[DateUtils.DATE]
         )
