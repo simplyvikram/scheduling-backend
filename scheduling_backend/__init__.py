@@ -128,6 +128,7 @@ def register_views(app):
     from handlers.job_handler import JobHandler
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
+    from handlers.equipment_handler import EquipmentHandler
     from handlers.jobshift_handler import JobShiftHandler
     from handlers.employeeshift_handler import (
         AddEmployeeShiftHandler,
@@ -140,7 +141,10 @@ def register_views(app):
         CopyJobshiftHandler,
         CopyAllJobshiftsHandler
     )
-    from handlers import RoleHandler
+    from handlers import (
+        EmployeeRoleHandler,
+        EquipmentTypeHandler
+    )
     from handlers.reporting_handler import (
         HoursWorkedPerEmployeeHandler,
         HoursWorkedPerShiftRole
@@ -154,6 +158,11 @@ def register_views(app):
     api.add_resource(EmployeeHandler, '/employees/<ObjectId:obj_id>',
                      endpoint="employee")
     api.add_resource(EmployeeHandler, '/employees', endpoint="employees")
+
+
+    api.add_resource(EquipmentHandler, '/equipment/<ObjectId:obj_id>',
+                     endpoint="equipment")
+    api.add_resource(EquipmentHandler, '/equipment', endpoint="equipment_")
 
 
     # for jobs, include a parameter to include jobshifts, jobshifts_ids/jobshifts
@@ -216,7 +225,11 @@ def register_views(app):
                      '/from_date/<string:from_date_str>'
                      '/to_date/<string:to_date_str>')
 
-    api.add_resource(RoleHandler, '/employeeroles', endpoint='employeeroles')
+    api.add_resource(EmployeeRoleHandler, '/employeeroles',
+                     endpoint='employeeroles')
+
+    api.add_resource(EquipmentTypeHandler, '/equipmenttypes',
+                     endpoint='equipmenttypes')
 
     api.add_resource(HoursWorkedPerEmployeeHandler,
                      '/reporting'

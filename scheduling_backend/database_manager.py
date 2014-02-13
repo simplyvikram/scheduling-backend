@@ -6,6 +6,7 @@ from exceptions import UserException
 class Collection(object):
     EMPLOYEES = 'employees'
     CLIENTS = 'clients'
+    EQUIPMENT = 'equipment'
     JOBS = 'jobs'
     JOBSHIFTS = 'jobshifts'
 

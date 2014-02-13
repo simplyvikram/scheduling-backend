@@ -1,7 +1,10 @@
 
 schema_type = "http://json-schema.org/draft-04/schema#"
 
-from models import BaseModel, Client, Employee, EmployeeShift, Job, JobShift
+from models import (
+    BaseModel, Client, Employee, Equipment, Job,
+    EmployeeShift, JobShift, EquipmentShift
+)
 
 
 schema_client = {
@@ -40,6 +43,24 @@ schema_employee = {
         Employee.Fields.ACTIVE: {
             "type": "boolean"
         },
+    },
+    "additionalProperties": False
+}
+
+schema_equipment = {
+    "$schema": schema_type,
+    "title": "Equipment schema",
+    "type": "object",
+    "properties": {
+        BaseModel.Fields._ID: {
+            "type": "string"
+        },
+        Equipment.Fields.NAME: {
+            "type": "string"
+        },
+        Equipment.Fields.TYPE: {
+            "type": "string"
+        }
     },
     "additionalProperties": False
 }
@@ -89,10 +110,6 @@ schema_employeeshift = {
     "title": "Employee shift schema",
     "type": "object",
     "properties": {
-
-        # BaseModel.Fields._ID: {
-        #     "type": "string"
-        # },
         EmployeeShift.Fields.EMPLOYEE_ID: {
             "type": "string"
         },
@@ -114,6 +131,18 @@ schema_employeeshift = {
         EmployeeShift.Fields.ACTUAL_END_TIME: {
             "type": "string",
             "format": "time"
+        }
+    },
+    "additionalProperties": False
+}
+
+schema_equipmentshift = {
+    "$schema": schema_type,
+    "title": "Equipment shift schema",
+    "type": "object",
+    "properties": {
+        EquipmentShift.Fields.EQUIPMENT_ID: {
+            "type": "string"
         }
     },
     "additionalProperties": False
@@ -153,6 +182,16 @@ schema_jobshift = {
                     schema_employeeshift["additionalProperties"]
             }
 
+        },
+        JobShift.Fields.EQUIPMENT_SHIFTS: {
+            "type": "array",
+            "uniqueItems": True,
+            "items": {
+                "type": "object",
+                "properties": schema_equipmentshift["properties"],
+                "additionalProperties":
+                    schema_equipmentshift["additionalProperties"]
+            }
         }
     },
     "additionalProperties": False

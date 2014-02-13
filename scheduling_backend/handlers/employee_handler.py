@@ -38,8 +38,9 @@ class EmployeeHandler(BaseHandler):
         name = self.data.get(Employee.Fields.NAME, None)
         current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
 
-        self._validate_employee_name(name)
         self._validate_current_role(current_role)
+        self._validate_employee_name(name)
+
 
 
     def preprocess_POST(self):
@@ -50,10 +51,7 @@ class EmployeeHandler(BaseHandler):
         """
         We validate that the employee role is present is a valid one
         """
-
-        if current_role is None:
-            return
-        elif current_role is '':
+        if current_role is '':
             raise UserException("current_role cannot be empty.")
         elif current_role not in Employee.allowed_roles():
             raise UserException("Allowed values for current_role are %s" %
@@ -72,7 +70,7 @@ class EmployeeHandler(BaseHandler):
             {Employee.Fields.NAME: emp_name}
         )
 
-        if matching_emp_count > 0:
+        if matching_emp_count:
             raise UserException("Duplicate employee name, choose another name")
 
 
@@ -110,15 +108,18 @@ class EmployeeHandler(BaseHandler):
 
             return employee_list
 
+
     @marshaling_handler
     def post(self):
-        # We do this, to make sure, we have all the data we need to create
-        # the employee, if not an exception is raised
+        """
+        We always try to create an Employee object from the data posted,
+        to make sure we have all the required data, if anything is absent
+        an exception is raised
+        """
         employee = Employee(**self.data)
         _dict = Employee.encode(employee)
 
         _id = DatabaseManager.insert(Collection.EMPLOYEES, _dict)
-        # todo can the data have an array of employees to be inserted????
         employee_dict = DatabaseManager.find_document_by_id(
             Collection.EMPLOYEES, _id, True
         )
@@ -128,14 +129,11 @@ class EmployeeHandler(BaseHandler):
     @marshaling_handler
     def patch(self, obj_id):
 
-        query_dict = {BaseModel.Fields._ID: obj_id}
-        update_dict = {'$set': self.data}
+        query = {BaseModel.Fields._ID: obj_id}
+        update = {'$set': self.data}
 
         result = DatabaseManager.update(
-            Collection.EMPLOYEES,
-            query_dict,
-            update_dict,
-            multi=False, upsert=False
+            Collection.EMPLOYEES, query, update, multi=False, upsert=False
         )
         employee_dict = DatabaseManager.find_document_by_id(
             Collection.EMPLOYEES, obj_id, True

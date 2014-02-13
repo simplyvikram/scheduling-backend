@@ -1,7 +1,10 @@
 
 from functools import wraps
-from flask.ext.restful import Resource
+
+
 from scheduling_backend.utils import JsonUtils
+from scheduling_backend.handlers.base_handler import BaseHandler
+from scheduling_backend.models import Employee, Equipment
 
 class MessageDict(object):
     request_not_in_json = {"Error": "Request is not in valid json format"}
@@ -53,8 +56,18 @@ def marshaling_handler(func):
     return wrapper
 
 
-class RoleHandler(Resource):
+class EmployeeRoleHandler(BaseHandler):
+
+    def __init__(self):
+        super(EmployeeRoleHandler, self).__init__(None)
 
     def get(self):
-        from scheduling_backend.models import Employee
         return Employee.allowed_roles()
+
+class EquipmentTypeHandler(BaseHandler):
+
+    def __init__(self):
+        super(EquipmentTypeHandler, self).__init__(None)
+
+    def get(self):
+        return Equipment.allowed_types()

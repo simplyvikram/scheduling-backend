@@ -75,6 +75,40 @@ class Employee(BaseModel):
                 Employee.Fields.CURRENT_ROLE, self.current_role,
                 Employee.Fields.ACTIVE, str(self.active))
 
+class Equipment(BaseModel):
+
+    class Fields(object):
+        NAME = "name"
+        TYPE = "type"
+
+    def __init__(self, name, type, _id=None):
+        super(Equipment, self).__init__(_id)
+
+        self.name = name
+        self.type = type
+
+    @classmethod
+    def encode(cls, equipment):
+        d = {
+            Equipment.Fields.NAME: equipment.name,
+            Equipment.Fields.TYPE: equipment.type
+        }
+        if equipment._id:
+            d[BaseModel.Fields._ID] = equipment._id
+
+        return d
+
+    def __repr__(self):
+
+        _ = "<Employee name:{name}, type:{type}, _id:{_id}>"
+        _ = _.format(name=self.name, type=self.type, _id=self._id)
+        return _
+
+    @classmethod
+    def allowed_types(cls):
+        return ["fork lift", "bulldozer", "shovel", "hammer"]
+
+
 class Job(BaseModel):
 
     class Fields(object):
@@ -190,6 +224,24 @@ class EmployeeShift(object):
 
         return d
 
+class EquipmentShift(object):
+
+    class Fields(object):
+        EQUIPMENT_ID = "equipment_id"
+
+    def __init__(self, equipment_id):
+        super(EquipmentShift, self).__init__()
+
+        self.equipment_id = equipment_id
+
+    @classmethod
+    def encode(cls, equipment_shift):
+        d = {
+            EquipmentShift.Fields.EQUIPMENT_ID: equipment_shift.equipment_id
+        }
+
+        return d
+
 
 class JobShift(BaseModel):
 
@@ -201,11 +253,13 @@ class JobShift(BaseModel):
         SCHEDULED_END_TIME = "scheduled_end_time"
 
         EMPLOYEE_SHIFTS = "employee_shifts"
+        EQUIPMENT_SHIFTS = "equipment_shifts"
 
     def __init__(self, job_id, job_date,
                  scheduled_start_time,
                  scheduled_end_time,
                  employee_shifts=list(),
+                 equipment_shifts=list(),
                  _id=None):
         """
         Always need to specify scheduled_start_time. When we create job_shifts
@@ -221,9 +275,22 @@ class JobShift(BaseModel):
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
 
+        # We dont have a scenario now where this can happen,
+        # but putting this for safety. If either employee_shifts or
+        # equipment_shifts is None
+        if self.employee_shifts is None:
+            self.employee_shifts = list()
+        if self.equipment_shifts is None:
+            self.equipment_shifts = list()
+
+
         self.employee_shifts = map(
             lambda _dict: EmployeeShift(**_dict),
             employee_shifts
+        )
+        self.equipment_shifts = map(
+            lambda _dict: EquipmentShift(**_dict),
+            equipment_shifts
         )
 
 
@@ -239,14 +306,20 @@ class JobShift(BaseModel):
         if job_shift._id:
             d[BaseModel.Fields._ID] = job_shift._id
 
-        if not job_shift.employee_shifts:
-            # If employee_shifts is none or empty
-            job_shift.employee_shifts = []
+        # This may never happen as we take of this in jobshift,
+        # but just being sure
+        if job_shift.employee_shifts is None:
+            job_shift.employee_shifts = list()
+        if job_shift.equipment_shifts is None:
+            job_shift.equipment_shifts = list()
 
 
-        _list = map(lambda emp_shift: EmployeeShift.encode(emp_shift),
-                    job_shift.employee_shifts)
+        employee_shifts = map(lambda x: EmployeeShift.encode(x),
+                              job_shift.employee_shifts)
+        d[JobShift.Fields.EMPLOYEE_SHIFTS] = employee_shifts
 
-        d[JobShift.Fields.EMPLOYEE_SHIFTS] = _list
+        equipment_shifts = map(lambda x: EquipmentShift.encode(x),
+                               job_shift.equipment_shifts)
+        d[JobShift.Fields.EQUIPMENT_SHIFTS] = equipment_shifts
 
         return d
