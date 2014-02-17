@@ -34,7 +34,7 @@ class HoursWorkedPerEmployeeHandler(BaseHandler):
         )
         dates_strings = map(lambda date: date.isoformat(), dates)
 
-        jobshifts = JobOperations.find_jobshifts_for_dates(dates_strings)
+        jobshifts = JobOperations.find_jobshifts(dates_strings=dates_strings)
 
         employees_hours_worked_dict = \
             extract_aggregate_hours_worked_per_employee(jobshifts)
@@ -120,8 +120,8 @@ class HoursWorkedPerShiftRole(BaseHandler):
         )
         dates_strings = map(lambda x: x.isoformat(), dates)
 
-        jobshifts = JobOperations.find_jobshifts_for_dates(dates_strings,
-                                                           job_id)
+        jobshifts = JobOperations.find_jobshifts(dates_strings=dates_strings,
+                                                 job_id=job_id)
         shift_role_hours_worked_dict = \
             extract_aggregate_hours_worked_per_role(jobshifts)
 

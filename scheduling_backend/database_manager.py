@@ -1,6 +1,9 @@
 
 from flask import current_app
-from models import BaseModel, Job, Employee, Client, EmployeeShift, JobShift
+from models import (
+    BaseModel, Client, Job, Employee, Equipment,
+    EmployeeShift, EquipmentShift, JobShift
+)
 from exceptions import UserException
 
 class Collection(object):
@@ -128,6 +131,7 @@ class DatabaseManager(object):
 
             Collection.JOBSHIFTS: JobShift,
             Collection.EMPLOYEES: Employee,
+            Collection.EQUIPMENT: Equipment,
             Collection.CLIENTS: Client,
             Collection.JOBS: Job
         }
@@ -137,21 +141,6 @@ class DatabaseManager(object):
 
 class JobOperations(object):
 
-    @staticmethod
-    def find_jobshift_by_date_and_employee_id(employee_id, job_date):
-
-        query = {
-            JobShift.Fields.JOB_DATE: job_date,
-            JobShift.Fields.EMPLOYEE_SHIFTS: {
-                '$elemMatch': {EmployeeShift.Fields.EMPLOYEE_ID: employee_id}
-            }
-        }
-
-        jobshift_dict = DatabaseManager.find(
-            Collection.JOBSHIFTS, query, False
-        )
-        if jobshift_dict:
-            return JobShift(**jobshift_dict)
 
     @staticmethod
     def find_jobshift_ids_for_day(date_str):
@@ -175,78 +164,112 @@ class JobOperations(object):
         return result
 
 
-
     @staticmethod
-    def find_jobshift_by_id_and_employee_id(_id, employee_id):
+    def find_jobshifts(dates_strings=None, job_id=None,
+                       employee_id=None, equipment_id=None):
         """
-        Finds a jobshift with a given _id, such that an employee with _id
-        employee_id is is part of the jobshift's employeeshifts
+        At least one key value argument needs to be present, else an exception
+        is thrown
         """
 
-        query = {
-            BaseModel.Fields._ID: _id,
-            JobShift.Fields.EMPLOYEE_SHIFTS: {
-                '$elemMatch': {EmployeeShift.Fields.EMPLOYEE_ID: employee_id}
-            }
-        }
+        an_arg_is_present = bool(dates_strings) or bool(job_id) or \
+                            bool(employee_id) or bool(equipment_id)
+        if not an_arg_is_present:
+            raise UserException("Jobshift search needs to be narrowed down")
 
-        jobshift_dict = DatabaseManager.find(
-            Collection.JOBSHIFTS, query, False
-        )
+        query = dict()
 
-        if jobshift_dict:
-            return JobShift(**jobshift_dict)
-
-    @staticmethod
-    def find_jobshifts_for_dates(dates_strings, job_id=None):
-
-        query = {
-            JobShift.Fields.JOB_DATE: {'$in': dates_strings}
-        }
+        if dates_strings:
+            query[JobShift.Fields.JOB_DATE] = {'$in': dates_strings}
         if job_id:
             query[JobShift.Fields.JOB_ID] = job_id
+        if employee_id:
+            query[JobShift.Fields.EMPLOYEE_SHIFTS] = {
+                '$elemMatch': {EmployeeShift.Fields.EMPLOYEE_ID: employee_id}
+            }
+        if equipment_id:
+            query[JobShift.Fields.EQUIPMENT_SHIFTS] = {
+                '$elemMatch': {EquipmentShift.Fields.EQUIPMENT_ID: equipment_id}
+            }
 
-        jobshift_documents = DatabaseManager.find(
+        jobshifts_documents = DatabaseManager.find(
             Collection.JOBSHIFTS, query, multiple=True
         )
-
         jobshifts = map(lambda document: JobShift(**document),
-                        jobshift_documents)
+                        jobshifts_documents)
 
         return jobshifts
 
-    # @staticmethod
-    # def find_jobshifts_for_dates(jobshift_id):
 
     @staticmethod
     def _can_we_remove_employee_from_jobshift(employee_id,
                                               jobshift_id):
-        jobshift = JobOperations.find_jobshift_by_id_and_employee_id(
-            jobshift_id, employee_id
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
         )
-        if not jobshift:
-            msg = "The employee with _id:%s is not scheduled " \
-                  "jobshift with id:%s. Hence it cannot be removed from it" \
-                  % (employee_id, jobshift_id)
+
+        if not jobshift.contains_employee(employee_id):
+
+            msg = "Employee {employee_id} is not scheduled for " \
+                  "jobshift {jobshift_id}. Hence it cannot be removed " \
+                  "from it".format(employee_id=employee_id,
+                                   jobshift_id=jobshift_id)
             raise UserException(msg)
+
+    @staticmethod
+    def _can_we_remove_equipment_from_jobshift(equipment_id, jobshift_id):
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
+
+        if not jobshift.contains_equipment(equipment_id):
+            msg = "Equipment {equipment_id} is not scheduled for " \
+                  "jobshift {jobshift_id}. Hence it cannot be removed " \
+                  "from it".format(equipment_id=equipment_id,
+                                   jobshift_id=jobshift_id)
+            raise UserException(msg)
+
 
 
     @staticmethod
     def _can_we_schedule_employee_for_date(employee_id,
-                                           check_for_date):
-        jobshift = JobOperations.find_jobshift_by_date_and_employee_id(
-            employee_id, check_for_date
-        )
-        if jobshift:
-            msg = "We cannot schedule employee for date:%s because the " \
-                  "employee is currently scheduled for jobshift _id:%s " \
-                  "for that day" % (check_for_date, jobshift._id)
+                                           date_str):
+
+        date_strings = [date_str]
+        jobshifts = JobOperations.find_jobshifts(dates_strings=date_strings,
+                                                 employee_id=employee_id)
+
+        if len(jobshifts) > 0:
+            msg = "We cannot schedule employee {employee_id} for " \
+                  "date {date_str}, as for that day its already scheduled " \
+                  "for jobshift {jobshift_id}".format(
+                employee_id=employee_id,
+                date_str=date_str,
+                jobshift_id=jobshifts[0]._id
+            )
 
             raise UserException(msg)
 
+    @staticmethod
+    def _can_we_schedule_equipment_for_date(equipment_id, date_str):
+
+        date_strings = [date_str]
+        jobshifts = JobOperations.find_jobshifts(dates_strings=date_strings,
+                                                 equipment_id=equipment_id)
+        if len(jobshifts) > 0:
+            msg = "We cannot schedule equipment {equipment_id} for " \
+                  "date {date_str}, as for that day its already scheduled " \
+                  "for jobshift {jobshift_id}".format(
+                equipment_id=equipment_id,
+                date_str=date_str,
+                jobshift_id=jobshifts[0]._id
+            )
+
+            raise UserException(msg)
 
     @staticmethod
     def _employee_active_to_be_scheduled(employee_id):
+
         employee = DatabaseManager.find_object_by_id(
             Collection.EMPLOYEES, employee_id, True
         )
@@ -257,15 +280,30 @@ class JobOperations(object):
 
 
     @staticmethod
-    def _can_we_schedule_employee_for_jobshift(employee_id,
-                                               jobshift_id):
-        jobshift = JobOperations.find_jobshift_by_id_and_employee_id(
-            jobshift_id, employee_id
+    def _can_we_schedule_employee_for_jobshift(employee_id, jobshift_id):
+
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
         )
-        if jobshift:
-            msg = "Employee _id:%s is already scheduled for" \
-                  "jobshift _id:%s" % (employee_id, jobshift_id)
+
+        if jobshift.contains_employee(employee_id):
+            msg = "Employee {employee_id} is already scheduled for " \
+                  "jobshift {jobshift_id}".format(employee_id=employee_id,
+                                                  jobshift_id=jobshift_id)
             raise UserException(msg)
+
+
+    @staticmethod
+    def _can_we_schedule_equipment_for_jobshift(equipment_id, jobshift_id):
+
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
+
+        if jobshift.contains_equipment(equipment_id):
+            msg = "Equipment {equipment_id} is already scheduled for " \
+                  "jobshift {jobshift_id}".format(equipment_id=equipment_id,
+                                                  jobshift_id=jobshift_id)
 
 
     @staticmethod
@@ -280,11 +318,27 @@ class JobOperations(object):
                 }
             }
         }
-        result = DatabaseManager.update(Collection.JOBSHIFTS,
-                                        query, update,
-                                        multi=False, upsert=False)
+        result = DatabaseManager.update(
+            Collection.JOBSHIFTS, query, update, multi=False, upsert=False
+        )
         return result
 
+
+    @staticmethod
+    def _force_remove_equipmentshift(equipment_id, jobshift_id):
+        query = {
+            BaseModel.Fields._ID: jobshift_id
+        }
+        update = {
+            '$pull': {
+                JobShift.Fields.EQUIPMENT_SHIFTS: {
+                    EquipmentShift.Fields.EQUIPMENT_ID: equipment_id
+                }
+            }
+        }
+        result = DatabaseManager.update(
+            Collection.JOBSHIFTS, query, update, multi=False, upsert=False)
+        return result
 
     @staticmethod
     def _force_add_employeeshift(employee_id, jobshift_id, shift_role):
@@ -304,6 +358,25 @@ class JobOperations(object):
         result = DatabaseManager.update(Collection.JOBSHIFTS,
                                         query, update,
                                         multi=False, upsert=False)
+        return result
+
+    @staticmethod
+    def _force_add_equipment_shift(equipment_id, jobshift_id):
+
+        equipmentshift_dict = EquipmentShift.encode(
+            EquipmentShift(equipment_id)
+        )
+        query = {
+            BaseModel.Fields._ID: jobshift_id
+        }
+        update = {
+            '$push': {
+                JobShift.Fields.EQUIPMENT_SHIFTS: equipmentshift_dict
+            }
+        }
+        result = DatabaseManager.update(
+            Collection.JOBSHIFTS, query, update, multi=False, upsert=False
+        )
         return result
 
 
@@ -367,6 +440,23 @@ class JobOperations(object):
         )
 
     @staticmethod
+    def add_equipment_to_jobshift(equipment_id, jobshift_id):
+
+        # We check for existence of both equipment and jobshift
+        equipment = DatabaseManager.find_object_by_id(
+            Collection.EQUIPMENT, equipment_id, True
+        )
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
+
+        JobOperations._can_we_schedule_equipment_for_jobshift(equipment_id,
+                                                              jobshift_id)
+        JobOperations._can_we_schedule_equipment_for_date(equipment_id,
+                                                          jobshift.job_date)
+        JobOperations._force_add_equipment_shift(equipment_id, jobshift_id)
+
+    @staticmethod
     def remove_employee_from_jobshift(employee_id, jobshift_id):
         # We check for existence of employee and jobshift
         DatabaseManager.find_object_by_id(
@@ -383,6 +473,21 @@ class JobOperations(object):
 
         return JobOperations._force_remove_employeeshift(employee_id,
                                                          jobshift_id)
+
+    @staticmethod
+    def remove_equipment_from_jobshift(equipment_id, jobshift_id):
+        DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
+        DatabaseManager.find_object_by_id(
+            Collection.EQUIPMENT, equipment_id, True
+        )
+
+        JobOperations._can_we_remove_equipment_from_jobshift(
+            equipment_id, jobshift_id
+        )
+        return JobOperations._force_remove_equipmentshift(equipment_id,
+                                                          jobshift_id)
 
 
     @staticmethod
@@ -426,4 +531,45 @@ class JobOperations(object):
             employee_id, to_jobshift_id, shift_role
         )
         # todo figure out what to do with the results
-        # todo what to do if one fails
+        # todo what to do if one above force_add/force_remove operation fails
+
+
+    @staticmethod
+    def move_equipment_amongst_jobshifts(equipment_id,
+                                         from_jobshift_id,
+                                         to_jobshift_id):
+
+        if from_jobshift_id == to_jobshift_id:
+            raise UserException("Both jobshift _id's are the same")
+
+        # we check existence of employee and jobshifts
+        equipment = DatabaseManager.find_object_by_id(
+            Collection.EQUIPMENT, equipment_id, True
+        )
+        from_jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, from_jobshift_id, True
+        )
+        to_jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, to_jobshift_id, True
+        )
+
+        JobOperations._can_we_remove_equipment_from_jobshift(equipment_id,
+                                                             from_jobshift_id)
+        JobOperations._can_we_schedule_equipment_for_jobshift(equipment_id,
+                                                              to_jobshift_id)
+
+        if from_jobshift.job_date != to_jobshift.job_date:
+            JobOperations._can_we_schedule_equipment_for_date(
+                equipment_id, to_jobshift.job_date
+            )
+
+        remove_result = JobOperations._force_remove_equipmentshift(
+            equipment_id, from_jobshift_id
+        )
+        add_result = JobOperations._force_add_equipment_shift(
+            equipment_id, to_jobshift_id
+        )
+
+        # todo figure out what to do with the results
+        # what if one of the above force_add/force_remove operation fails
+

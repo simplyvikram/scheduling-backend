@@ -37,10 +37,9 @@ class AddEmployeeShiftHandler(BaseHandler):
             employee_id, jobshift_id, shift_role
         )
 
-        jobshift_dict = \
-            DatabaseManager.find_document_by_id(Collection.JOBSHIFTS,
-                                                jobshift_id,
-                                                True)
+        jobshift_dict = DatabaseManager.find_document_by_id(
+            Collection.JOBSHIFTS, jobshift_id, True
+        )
         return jobshift_dict
 
 
@@ -53,8 +52,9 @@ class RemoveEmployeeShiftHandler(BaseHandler):
     @marshaling_handler
     def get(self, employee_id, jobshift_id):
 
-        JobOperations.remove_employee_from_jobshift(employee_id, jobshift_id)
-
+        JobOperations.remove_employee_from_jobshift(
+            employee_id, jobshift_id
+        )
         jobshift_dict = DatabaseManager.find_document_by_id(
             Collection.JOBSHIFTS, jobshift_id, True
         )
@@ -108,11 +108,11 @@ class ModifyEmployeeShiftHandler(BaseHandler):
         shift_role = self.data.get(EmployeeShift.Fields.SHIFT_ROLE, None)
         self.validate_shift_role(shift_role)
 
-        jobshift = JobOperations.find_jobshift_by_id_and_employee_id(
-            jobshift_id, employee_id
+        jobshift = DatabaseManager.find_object_by_id(
+            Collection.JOBSHIFTS, jobshift_id
         )
 
-        if not jobshift:
+        if not jobshift.contains_employee(employee_id):
             msg = "The employee _id:%s is not scheduled for jobshift " \
                   "_id: %s. Please add him to the jobshift first" % \
                   (employee_id, jobshift_id)

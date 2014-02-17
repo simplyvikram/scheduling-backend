@@ -278,11 +278,10 @@ class JobShift(BaseModel):
         # We dont have a scenario now where this can happen,
         # but putting this for safety. If either employee_shifts or
         # equipment_shifts is None
-        if self.employee_shifts is None:
+        if employee_shifts is None:
             self.employee_shifts = list()
-        if self.equipment_shifts is None:
+        if equipment_shifts is None:
             self.equipment_shifts = list()
-
 
         self.employee_shifts = map(
             lambda _dict: EmployeeShift(**_dict),
@@ -313,7 +312,6 @@ class JobShift(BaseModel):
         if job_shift.equipment_shifts is None:
             job_shift.equipment_shifts = list()
 
-
         employee_shifts = map(lambda x: EmployeeShift.encode(x),
                               job_shift.employee_shifts)
         d[JobShift.Fields.EMPLOYEE_SHIFTS] = employee_shifts
@@ -323,3 +321,17 @@ class JobShift(BaseModel):
         d[JobShift.Fields.EQUIPMENT_SHIFTS] = equipment_shifts
 
         return d
+
+    def contains_employee(self, employee_id):
+
+        _ = filter(lambda x: x.employee_id == employee_id,
+                   self.employee_shifts)
+
+        return bool(len(list(_)))
+
+    def contains_equipment(self, equipment_id):
+
+        _ = filter(lambda x: x.equipment_id == equipment_id,
+                   self.equipment_shifts)
+
+        return bool(len(list(_)))

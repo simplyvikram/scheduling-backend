@@ -1,7 +1,9 @@
 
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.handlers import marshaling_handler, Params
-from scheduling_backend.models import BaseModel, Job, JobShift, EmployeeShift
+from scheduling_backend.models import (
+    BaseModel, Job, JobShift, EmployeeShift, EquipmentShift
+)
 from scheduling_backend.database_manager import (
     DatabaseManager, Collection, JobOperations
 )
@@ -42,7 +44,8 @@ class CopyJobshiftHandler(BaseHandler):
         self.validate_start_and_end_dates(from_date_str, to_date_str)
 
         copy_jobshift_contents(
-            jobshift_id, from_date_str, to_date_str, include_saturday, include_sunday
+            jobshift_id, from_date_str, to_date_str,
+            include_saturday, include_sunday
         )
 
         return '', 204
@@ -127,15 +130,26 @@ def copy_jobshift_contents(jobshift_id,
         employee_shift_dict = EmployeeShift.encode(employee_shift)
         employee_shifts.append(employee_shift_dict)
 
-    # The employees could have been assigned elsewhere, we need to remove them
+    equipment_shifts = []
+    for _dict in jobshift[JobShift.Fields.EQUIPMENT_SHIFTS]:
+        equipment_shift = EquipmentShift(**_dict)
+        equipment_shift_dict = EquipmentShift.encode(equipment_shift)
+
+        equipment_shifts.append(equipment_shift_dict)
+
+    # The employees/equipment could have been assigned elsewhere, we need to remove them
     # from other jobshifts before we put them in the copied jobshifts
     employee_id_list = map(lambda x: x[EmployeeShift.Fields.EMPLOYEE_ID],
                            employee_shifts)
+    equipment_id_list = map(lambda x: x[EquipmentShift.Fields.EQUIPMENT_ID],
+                            equipment_shifts)
 
     dates_to_copy_to = map(lambda x: x.isoformat(), dates_to_copy_to)
 
-    remove_employees_from_assigned_jobshifts(dates_to_copy_to, employee_id_list)
-
+    remove_employees_from_assigned_jobshifts(dates_to_copy_to,
+                                             employee_id_list)
+    remove_equipment_from_assigned_jobshifts(dates_to_copy_to,
+                                             equipment_id_list)
     query_dict = {
         JobShift.Fields.JOB_ID: job_id,
         JobShift.Fields.JOB_DATE: {'$in': dates_to_copy_to}
@@ -144,7 +158,8 @@ def copy_jobshift_contents(jobshift_id,
         '$set': {
             JobShift.Fields.SCHEDULED_START_TIME: scheduled_start_time,
             JobShift.Fields.SCHEDULED_END_TIME: scheduled_end_time,
-            JobShift.Fields.EMPLOYEE_SHIFTS: employee_shifts
+            JobShift.Fields.EMPLOYEE_SHIFTS: employee_shifts,
+            JobShift.Fields.EQUIPMENT_SHIFTS: equipment_shifts
         }
     }
 
@@ -171,6 +186,26 @@ def remove_employees_from_assigned_jobshifts(date_list, employee_id_list):
         }
     }
 
+    DatabaseManager.update(
+        Collection.JOBSHIFTS,
+        query_dict,
+        update_dict,
+        multi=True,
+        upsert=False
+    )
+
+def remove_equipment_from_assigned_jobshifts(date_list, equipment_id_list):
+
+    query_dict = {
+        JobShift.Fields.JOB_DATE: {'$in': date_list}
+    }
+    update_dict = {
+        '$pull': {
+            JobShift.Fields.EQUIPMENT_SHIFTS: {
+                EquipmentShift.Fields.EQUIPMENT_ID: {'$in': equipment_id_list}
+            }
+        }
+    }
     DatabaseManager.update(
         Collection.JOBSHIFTS,
         query_dict,
