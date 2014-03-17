@@ -48,10 +48,14 @@ def marshaling_handler(func):
                     inst.data
                 )
 
-        resp = func(inst, *args, **kwargs)
+        json_data = func(inst, *args, **kwargs)
+        json_data = JsonUtils.change_all_objectids_to_str(json_data)
 
-        resp = JsonUtils.change_all_objectids_to_str(resp)
-        return resp
+        cors_headers = {
+            'Access-Control-Allow-Origin': '*'
+        }
+
+        return json_data, 200, cors_headers
 
     return wrapper
 

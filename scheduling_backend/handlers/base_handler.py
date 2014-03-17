@@ -53,6 +53,16 @@ class BaseHandler(Resource):
 
         self.preprocess()
 
+    def options(self):
+
+        headers_dict = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Max-Age': 1728000,
+            'Access-Control-Allow-Methods': 'DELETE, GET, POST, PATCH',
+            'Access-Control-Allow-Headers': 'accept, origin, content-type'
+        }
+        return "", 200, headers_dict
+
     def preprocess(self):
 
         if request.method == BaseHandler.GET:
