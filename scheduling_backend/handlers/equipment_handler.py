@@ -1,7 +1,7 @@
 
 from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.handlers import marshaling_handler, delete_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_equipment
 from scheduling_backend.models import BaseModel, Equipment
@@ -71,6 +71,8 @@ class EquipmentHandler(BaseHandler):
 
         return equipment_dict
 
+
+    @delete_handler
     def delete(self, obj_id):
 
         result = DatabaseManager.remove(

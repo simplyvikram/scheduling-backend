@@ -59,6 +59,5 @@ class JobShiftHandler(BaseHandler):
         raise UserException("Jobshifts cannot be created using apis")
 
 
-    @marshaling_handler
     def delete(self):
         raise UserException("Jobshifts cannot be deleted using apis")

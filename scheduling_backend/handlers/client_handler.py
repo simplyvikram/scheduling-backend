@@ -4,7 +4,9 @@ import flask.ext.restful.types
 from flask import current_app as current_app
 
 from scheduling_backend.database_manager import DatabaseManager, Collection
-from scheduling_backend.handlers import marshaling_handler, Params
+from scheduling_backend.handlers import (
+    marshaling_handler, Params, delete_handler
+)
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
@@ -114,6 +116,7 @@ class ClientHandler(BaseHandler):
         return client_dict
 
 
+    @delete_handler
     def delete(self, obj_id):
 
         # todo can the data have an array of clients to be deleted????

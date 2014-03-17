@@ -60,6 +60,25 @@ def marshaling_handler(func):
     return wrapper
 
 
+def delete_handler(func):
+    """
+    Decorator for REST delete operation, adds CORS support
+    """
+
+    cors_headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+
+    @wraps(func)
+    def wrapper(inst, *args, **kwargs):
+
+        resp_data, status = func(inst, *args, **kwargs)
+
+        return resp_data, status, cors_headers
+
+    return wrapper
+
+
 class EmployeeRoleHandler(BaseHandler):
 
     def __init__(self):

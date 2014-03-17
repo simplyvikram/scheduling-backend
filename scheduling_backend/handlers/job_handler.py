@@ -12,7 +12,9 @@ from scheduling_backend.database_manager import (
     DatabaseManager, Collection, JobOperations
 )
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import Params, marshaling_handler
+from scheduling_backend.handlers import (
+    Params, marshaling_handler, delete_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
 from scheduling_backend.models import BaseModel, Job, JobShift
@@ -315,6 +317,7 @@ class JobHandler(BaseHandler):
         job_dict["jobshifts"] = jobshifts
 
 
+    @delete_handler
     def delete(self, job_id):
 
         # todo what if the first delete fails. Oh shitttt ;-)

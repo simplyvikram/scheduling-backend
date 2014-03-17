@@ -5,7 +5,9 @@ import flask.ext.restful.types
 
 from scheduling_backend.database_manager import Collection, DatabaseManager
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import marshaling_handler, Params
+from scheduling_backend.handlers import (
+    marshaling_handler, Params, delete_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employee
 from scheduling_backend.models import BaseModel, Employee
@@ -140,7 +142,7 @@ class EmployeeHandler(BaseHandler):
         )
         return employee_dict
 
-
+    @delete_handler
     def delete(self, obj_id):
 
         result = DatabaseManager.remove(
