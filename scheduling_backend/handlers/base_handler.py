@@ -53,7 +53,7 @@ class BaseHandler(Resource):
 
         self.preprocess()
 
-    def options(self):
+    def options(self, *args, **kwargs):
 
         headers_dict = {
             'Access-Control-Allow-Origin': '*',
