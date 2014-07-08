@@ -79,6 +79,24 @@ def delete_handler(func):
     return wrapper
 
 
+# todo fix this soon
+# merge it with delete_handler() maybe??
+def no_data_handler(func):
+    cors_headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+
+    @wraps(func)
+    def wrapper(inst, *args, **kwargs):
+
+        resp_data, status = func(inst, *args, **kwargs)
+
+        return resp_data, status, cors_headers
+
+    return wrapper
+
+
+
 class EmployeeRoleHandler(BaseHandler):
 
     def __init__(self):

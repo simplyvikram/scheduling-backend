@@ -6,7 +6,8 @@ from scheduling_backend.database_manager import (
 )
 
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import marshaling_handler, Params
+from scheduling_backend.handlers import no_data_handler, marshaling_handler, \
+    Params
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employeeshift
 from scheduling_backend.models import EmployeeShift, Employee
@@ -78,7 +79,7 @@ class MoveEmployeeAcrossJobshifts(BaseHandler):
         self.args = self.req_parser.parse_args()
 
 
-    @marshaling_handler
+    @no_data_handler
     def get(self, employee_id, from_jobshift_id, to_jobshift_id):
 
         shift_role = self.args.get(Params.SHIFT_ROLE, None)
