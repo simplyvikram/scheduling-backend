@@ -238,8 +238,8 @@ def register_views(app):
     api.add_resource(CopyJobshiftHandler,
                      '/copy'
                      '/jobshift/<ObjectId:jobshift_id>'
-                     '/fromdate/<string:from_date_str>'
-                     '/todate/<string:to_date_str>')
+                     '/from_date/<string:from_date_str>'
+                     '/to_date/<string:to_date_str>')
 
     # params - include_sunday, include_saturday
     api.add_resource(CopyAllJobshiftsHandler,
