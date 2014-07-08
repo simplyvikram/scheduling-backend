@@ -1,7 +1,7 @@
 
 import flask.ext.restful.types
 
-from flask import current_app as current_app
+from bson.objectid import ObjectId
 
 from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.handlers import (
@@ -28,28 +28,74 @@ class ClientHandler(BaseHandler):
         self.args = self.req_parser.parse_args()
 
     def preprocess_PATCH(self):
-        name = self.data.get(Client.Fields.NAME, None)
-        self._validate_client_name(name)
+
+        # caution -
+        # Super hackish way to extract the object id as
+        # reqparse wasn't working as expected
+        path = flask.request.path
+        client_id = path[-24:]
+
+        client_name = self.data.get(Client.Fields.NAME, None)
+        self._validate_client_name(client_name, ObjectId(client_id))
 
 
     def preprocess_POST(self):
-        self.preprocess_PATCH()
+        client_name = self.data.get(Client.Fields.NAME, None)
+        self._validate_client_name(client_name)
 
 
-    def _validate_client_name(self, client_name):
+    def _validate_client_name(self, new_client_name, client_id=None):
         """
-        We check if the client name, if present is a valid one
+        client_id would only be present for a PATCH.
+        It would be None in case of a POST
         """
-        if client_name == '':
+
+        if new_client_name == '':
             raise UserException("Client name cannot be empty")
 
         matching_client_count = DatabaseManager.find_count(
             Collection.CLIENTS,
-            {Client.Fields.NAME: client_name}
+            {Client.Fields.NAME: new_client_name}
         )
 
-        if matching_client_count:
-            raise UserException("Duplicate user name, choose another name.")
+        if client_id:
+            # This is a PATCH
+            client = DatabaseManager.find_object_by_id(Collection.CLIENTS,
+                                                       client_id,
+                                                       True)
+            if client.name == new_client_name:
+                # The old client name is being passed in a patch, let it pass
+                pass
+            else:
+                # The client name is being changed in the patch, check to make
+                # no other client has the same name
+                if matching_client_count >= 1:
+                    # This means some other client has same name as the new name
+                    # so we should not let two clients have the same name
+                    raise UserException("Another client has the same name, "
+                                        "use another name")
+
+        else:
+            # This is a POST, so we only need to check if another client has
+            # the same name or not
+            if matching_client_count >= 1:
+                raise UserException("Another client has the same name,"
+                                    " use another name")
+
+    # def _validate_client_name2(self, client_name):
+    #     """
+    #     We check if the client name, if present is a valid one
+    #     """
+    #     if client_name == '':
+    #         raise UserException("Client name cannot be empty")
+    #
+    #     matching_client_count = DatabaseManager.find_count(
+    #         Collection.CLIENTS,
+    #         {Client.Fields.NAME: client_name}
+    #     )
+    #
+    #     if matching_client_count:
+    #         raise UserException("Duplicate user name, choose another name.")
 
 
     @marshaling_handler
