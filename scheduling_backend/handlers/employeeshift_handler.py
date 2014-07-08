@@ -78,6 +78,7 @@ class MoveEmployeeAcrossJobshifts(BaseHandler):
         self.args = self.req_parser.parse_args()
 
 
+    @marshaling_handler
     def get(self, employee_id, from_jobshift_id, to_jobshift_id):
 
         shift_role = self.args.get(Params.SHIFT_ROLE, None)
