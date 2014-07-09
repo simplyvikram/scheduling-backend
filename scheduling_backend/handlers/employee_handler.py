@@ -1,5 +1,8 @@
 
+
+from bson.objectid import ObjectId
 from flask import current_app as current_app
+
 
 import flask.ext.restful.types
 
@@ -34,19 +37,38 @@ class EmployeeHandler(BaseHandler):
         self.args = self.req_parser.parse_args()
 
 
-
     def preprocess_PATCH(self):
+
+        # caution -
+        # Super hackish way to extract the object id as
+        # reqparse wasn't working as expected
+        path = flask.request.path
+        employee_id = path[-24:]
 
         name = self.data.get(Employee.Fields.NAME, None)
         current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
 
         self._validate_current_role(current_role)
-        self._validate_employee_name(name)
-
+        self.validate_name(
+            name,
+            Collection.EMPLOYEES,
+            Employee.Fields.NAME,
+            ObjectId(employee_id)
+        )
+        # self._validate_employee_name(name, ObjectId(employee_id))
 
 
     def preprocess_POST(self):
-        self.preprocess_PATCH()
+        name = self.data.get(Employee.Fields.NAME, None)
+        current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
+
+        self._validate_current_role(current_role)
+        self.validate_name(
+            name,
+            Collection.EMPLOYEES,
+            Employee.Fields.NAME
+        )
+        # self._validate_employee_name(name)
 
 
     def _validate_current_role(self, current_role):
@@ -60,21 +82,44 @@ class EmployeeHandler(BaseHandler):
                                 str(Employee.allowed_roles()))
 
 
-    def _validate_employee_name(self, emp_name):
-        """
-        We check if the employee name, if present is a valid one
-        """
-        if emp_name == '':
-            raise UserException("Employeee name cannot be empty")
-
-        matching_emp_count = DatabaseManager.find_count(
-            Collection.EMPLOYEES,
-            {Employee.Fields.NAME: emp_name}
-        )
-
-        if matching_emp_count:
-            raise UserException("Duplicate employee name, choose another name")
-
+    # def _validate_employee_name(self, new_employee_name, employee_id=None):
+    #     """
+    #     employee_id would only be present for a PATCH.
+    #     It would be None in case of a POST
+    #     """
+    #
+    #     if new_employee_name == '':
+    #         raise UserException("Employee name cannot be empty")
+    #
+    #     matching_employee_count = DatabaseManager.find_count(
+    #         Collection.EMPLOYEES,
+    #         {Employee.Fields.NAME: new_employee_name}
+    #     )
+    #
+    #     if employee_id:
+    #         # This is a PATCH
+    #         employee = DatabaseManager.find_object_by_id(Collection.EMPLOYEES,
+    #                                                      employee_id,
+    #                                                      True)
+    #         if employee.name == new_employee_name:
+    #             # The old employee name is being passed in a patch, let it pass
+    #             pass
+    #         else:
+    #             # The employee name is being changed in the patch, check to make
+    #             # no other employee has the same name
+    #             if matching_employee_count >= 1:
+    #                 # This means some other employee has same name,
+    #                 #  as the new name, so we should not let
+    #                 #  two employees have the same name
+    #                 raise UserException("Another employee has the same name, "
+    #                                     "use another name")
+    #
+    #     else:
+    #         # This is a POST, so we only need to check if another employee has
+    #         # the same name or not
+    #         if matching_employee_count >= 1:
+    #             raise UserException("Another employee has the same name,"
+    #                                 " use another name")
 
     @marshaling_handler
     def get(self, obj_id=None):

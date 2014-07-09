@@ -5,6 +5,7 @@ from flask.ext.restful import Resource
 from flask.ext.restful.reqparse import RequestParser
 
 from scheduling_backend.models import BaseModel
+from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.utils import (
     JsonUtils, DateUtils
@@ -139,3 +140,61 @@ class BaseHandler(Resource):
         if (end - start).total_seconds() <= 0:
             raise UserException("Scheduled start time needs to be less than "
                                 "scheduled end time")
+
+
+
+    def validate_name(self, new_name, collection_name,
+                      name_of_the_field, _id=None):
+        """
+        called during POST or PUT to see if the name passed is a valid one
+
+        Can only be called from the following collections:
+            Collection.EQUIPMENT, Collection.EMPLOYEE, Collection.CLIENT
+
+        _id would only be present for a PATCH.
+        It would be None in case of a POST
+        """
+
+        allowed_collections = [
+            Collection.CLIENTS, Collection.EMPLOYEES, Collection.EQUIPMENT]
+
+        if collection_name not in allowed_collections:
+            error_msg = "%s does not have a name field" % (collection_name,)
+
+            raise UserException(error_msg)
+
+        if new_name == '':
+            error_msg = " %s mame cannot be empty" % (collection_name,)
+            raise UserException(error_msg)
+
+        matching_count = DatabaseManager.find_count(
+            collection_name,
+            {name_of_the_field: new_name}
+        )
+
+        if _id:
+            # This is a PATCH
+            doc = DatabaseManager.find_document_by_id(collection_name,
+                                                      _id,
+                                                      True)
+            if doc[name_of_the_field] == new_name:
+                # The old name is being passed in a patch, let it pass
+                pass
+            else:
+                # The name is being changed in the patch, check to make
+                # no other client has the same name
+                if matching_count >= 1:
+                    # This means some other document of that collection
+                    #  has same name as the new name
+                    # so we should not let them both have the same name
+                    error_msg = "Another %s has the same name, " \
+                                "use another name" % (collection_name,)
+                    raise UserException(error_msg)
+
+        else:
+            # This is a POST, so we only need to check if another client has
+            # the same name or not
+            if matching_count >= 1:
+                error_msg = "Another %s has the same name, use another name" \
+                            % (collection_name, )
+                raise UserException(error_msg)

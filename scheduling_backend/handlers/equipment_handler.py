@@ -1,4 +1,7 @@
 
+import flask
+
+from bson.objectid import ObjectId
 from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import marshaling_handler, delete_handler
@@ -12,14 +15,36 @@ class EquipmentHandler(BaseHandler):
         super(EquipmentHandler, self).__init__(schema_equipment)
 
     def preprocess_PATCH(self):
+
+        # caution -
+        # Super hackish way to extract the object id as
+        # reqparse wasn't working as expected
+        path = flask.request.path
+        equipment_id = path[-24:]
+
         name = self.data.get(Equipment.Fields.NAME, None)
         type = self.data.get(Equipment.Fields.TYPE, None)
 
         self._validate_equipment_type(type)
-        self._validate_equipment_name(name)
+        self.validate_name(
+            name,
+            Collection.EQUIPMENT,
+            Equipment.Fields.NAME,
+            ObjectId(equipment_id)
+        )
+        # self._validate_equipment_name(name, ObjectId(equipment_id))
 
     def preprocess_POST(self):
-        self.preprocess_PATCH()
+        name = self.data.get(Equipment.Fields.NAME, None)
+        type = self.data.get(Equipment.Fields.TYPE, None)
+
+        self._validate_equipment_type(type)
+        self.validate_name(
+            name,
+            Collection.EQUIPMENT,
+            Equipment.Fields.NAME
+        )
+        # self._validate_equipment_name(name)
 
     @marshaling_handler
     def get(self, obj_id=None):
@@ -101,19 +126,41 @@ class EquipmentHandler(BaseHandler):
             raise UserException(msg)
 
 
-    def _validate_equipment_name(self, name):
-        """
-        We check that the equipment name, if present is a valid_one
-        """
-        if name == '':
-            raise UserException('Equipment name cannot be empty')
-
-        matching_count = DatabaseManager.find_count(
-            Collection.EQUIPMENT,
-            {Equipment.Fields.NAME: name}
-        )
-
-        if matching_count:
-            raise UserException('Duplicate equipment name, choose another name')
-
-
+    # def _validate_equipment_name(self, new_name, equipment_id):
+    #     """
+    #     equipment_id would only be present for a PATCH.
+    #     It would be None in case of a POST
+    #     """
+    #
+    #     if new_name == '':
+    #         raise UserException("Equipment name cannot be empty")
+    #
+    #     matching_equipment_count = DatabaseManager.find_count(
+    #         Collection.EQUIPMENT,
+    #         {Equipment.Fields.NAME: new_name}
+    #     )
+    #
+    #     if equipment_id:
+    #         # This is a PATCH
+    #         equipment = DatabaseManager.find_object_by_id(Collection.EQUIPMENT,
+    #                                                       equipment_id,
+    #                                                       True)
+    #         if equipment.name == new_name:
+    #             # The old equipment name is being passed in a patch, let it pass
+    #             pass
+    #         else:
+    #             # The equipment name is being changed in the patch, check to make
+    #             # no other client has the same name
+    #             if matching_client_count >= 1:
+    #                 # This means some other client has same name as the new name
+    #                 # so we should not let two clients have the same name
+    #                 raise UserException("Another client has the same name, "
+    #                                     "use another name")
+    #
+    #     else:
+    #         # This is a POST, so we only need to check if another client has
+    #         # the same name or not
+    #         if matching_client_count >= 1:
+    #             raise UserException("Another client has the same name,"
+    #                                 " use another name")
+    #
