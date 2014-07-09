@@ -129,7 +129,7 @@ def register_views(app):
     from handlers.client_handler import ClientHandler
     from handlers.employee_handler import EmployeeHandler
     from handlers.equipment_handler import EquipmentHandler
-    from handlers.jobshift_handler import JobShiftHandler
+    from handlers.jobshift_handler import JobShiftHandler, ClearJobshiftsHandler
     from handlers.employeeshift_handler import (
         AddEmployeeShiftHandler,
         RemoveEmployeeShiftHandler,
@@ -181,6 +181,9 @@ def register_views(app):
     api.add_resource(JobShiftHandler,
                      '/jobshifts/<ObjectId:jobshift_id>',
                      endpoint="jobshift")
+
+    api.add_resource(ClearJobshiftsHandler,
+                     '/clear/alljobshifts/for_date/<string:for_date_str>')
 
     # params shift_role, if absent use employee's current role
     api.add_resource(AddEmployeeShiftHandler,

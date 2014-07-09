@@ -200,6 +200,19 @@ class JobOperations(object):
 
         return jobshifts
 
+    @staticmethod
+    def delete_jobshifts(jobshift_ids):
+
+        remove_query_dict = dict()
+        remove_query_dict[BaseModel._id] = {'$in': jobshift_ids}
+
+        DatabaseManager.remove(
+            Collection.JOBSHIFTS,
+            remove_query_dict,
+            multiple=True
+        )
+
+
 
     @staticmethod
     def _can_we_remove_employee_from_jobshift(employee_id,

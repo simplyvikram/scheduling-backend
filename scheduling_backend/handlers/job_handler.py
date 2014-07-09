@@ -10,11 +10,11 @@ import flask.ext.restful.types
 from scheduling_backend.utils import DateUtils
 from scheduling_backend.database_manager import (
     DatabaseManager, Collection, JobOperations
-)
+    )
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import (
     Params, marshaling_handler, delete_handler
-)
+    )
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
 from scheduling_backend.models import BaseModel, Job, JobShift
@@ -87,6 +87,27 @@ class JobHandler(BaseHandler):
             return jobs_list
 
 
+    @delete_handler
+    def delete(self, job_id):
+
+        # todo what if the first delete fails. Oh shitttt ;-)
+        result = DatabaseManager.remove(
+            Collection.JOBSHIFTS,
+            {JobShift.Fields.JOB_ID: job_id},
+            multiple=True
+        )
+        result = DatabaseManager.remove(
+            Collection.JOBS,
+            {BaseModel.Fields._ID: job_id},
+            multiple=False
+        )
+
+        if not result['err'] and result['n']:
+            return '', 204
+        else:
+            return '', 404
+
+
     @marshaling_handler
     def post(self):
         # We create a job object to make sure we have all the data we need
@@ -106,10 +127,11 @@ class JobHandler(BaseHandler):
                                                  include_saturday=True,
                                                  include_sunday=True)
 
-        job_id = self._create_job(job)
-        self._create_jobshifts(job_id, date_list,
-                               job.scheduled_start_time,
-                               job.scheduled_end_time)
+        job_id = JobAndJobshiftCreationHelper.create_job(job)
+
+        JobAndJobshiftCreationHelper.create_jobshifts(job_id, date_list,
+                                                  job.scheduled_start_time,
+                                                  job.scheduled_end_time)
 
         job_dict = DatabaseManager.find_document_by_id(
             Collection.JOBS, job_id, True
@@ -162,10 +184,12 @@ class JobHandler(BaseHandler):
             upsert=False
         )
 
-        self._modify_jobshifts_dates(job_id, new_start_date, new_end_date)
-        self._modify_jobshifts_times(job_id,
-                                     new_scheduled_start_time,
-                                     new_scheduled_end_time)
+        JobAndJobshiftCreationHelper.modify_jobshifts_dates(
+            job_id, new_start_date, new_end_date
+        )
+        JobAndJobshiftCreationHelper.modify_jobshifts_times(
+            job_id, new_scheduled_start_time, new_scheduled_end_time
+        )
 
         # now retrieve all the information about the job and send it back
         job_dict = DatabaseManager.find_document_by_id(
@@ -180,15 +204,32 @@ class JobHandler(BaseHandler):
         return job_dict
 
 
-    def _create_job(self, job):
 
+    def _append_jobshift_to_job_response(self, job_dict):
+
+        job_id = job_dict[BaseModel.Fields._ID]
+
+        jobshifts = DatabaseManager.find(
+            Collection.JOBSHIFTS,
+            query_dict={JobShift.Fields.JOB_ID: job_id},
+            multiple=True
+        )
+        job_dict["jobshifts"] = jobshifts
+
+
+class JobAndJobshiftCreationHelper(object):
+
+
+    @staticmethod
+    def create_job(job):
         job_id = DatabaseManager.insert(Collection.JOBS, Job.encode(job))
         return job_id
 
 
-    def _create_jobshifts(self, job_id, date_list,
-                          scheduled_start_time_str,
-                          scheduled_end_time_str):
+    @staticmethod
+    def create_jobshifts(job_id, date_list,
+                         scheduled_start_time_str,
+                         scheduled_end_time_str):
         jobshifts = []
         for d in date_list:
             jobshift = JobShift(job_id=job_id,
@@ -204,8 +245,9 @@ class JobHandler(BaseHandler):
         DatabaseManager.insert(Collection.JOBSHIFTS, jobshifts)
 
 
-    def _get_dates_to_add_and_remove(self, old_start_date, old_end_date,
-                                     new_start_date, new_end_date):
+    @staticmethod
+    def get_dates_to_add_and_remove(old_start_date, old_end_date,
+                                    new_start_date, new_end_date):
         # todo comment this damn thing at some point to explain whats going on
 
         dates_to_add = set()
@@ -243,7 +285,8 @@ class JobHandler(BaseHandler):
         return dates_to_add, dates_to_remove
 
 
-    def _modify_jobshifts_dates(self, job_id, new_start_date, new_end_date):
+    @staticmethod
+    def modify_jobshifts_dates(job_id, new_start_date, new_end_date):
 
         if (new_start_date == g.job.start_date and
                     new_end_date == g.job.end_date):
@@ -260,10 +303,11 @@ class JobHandler(BaseHandler):
         new_end_date = DateUtils.to_datetime_format(new_end_date,
                                                     DateUtils.DATE)
 
-        dates_to_add, dates_to_remove = self._get_dates_to_add_and_remove(
-            old_start_date, old_end_date,
-            new_start_date, new_end_date
-        )
+        dates_to_add, dates_to_remove = \
+            JobAndJobshiftCreationHelper.get_dates_to_add_and_remove(
+                old_start_date, old_end_date,
+                new_start_date, new_end_date
+            )
 
         dates_to_remove = map(lambda x: x.isoformat(), dates_to_remove)
 
@@ -279,14 +323,14 @@ class JobHandler(BaseHandler):
         # We still use the old scheduled start and end times here to create
         # job shifts. If the scheduled start and end times need to be changed
         # they are changed elsewhere
-        self._create_jobshifts(job_id, dates_to_add,
-                               g.job.scheduled_start_time,
-                               g.job.scheduled_end_time)
+        JobAndJobshiftCreationHelper.create_jobshifts(job_id, dates_to_add,
+                                                  g.job.scheduled_start_time,
+                                                  g.job.scheduled_end_time)
 
-
-    def _modify_jobshifts_times(self, job_id,
-                                new_scheduled_start_time,
-                                new_scheduled_end_time):
+    @staticmethod
+    def modify_jobshifts_times(job_id,
+                               new_scheduled_start_time,
+                               new_scheduled_end_time):
         if (new_scheduled_start_time == g.job.scheduled_start_time and
                     new_scheduled_end_time == g.job.scheduled_end_time):
             return
@@ -304,35 +348,3 @@ class JobHandler(BaseHandler):
             upsert=False
         )
 
-
-    def _append_jobshift_to_job_response(self, job_dict):
-
-        job_id = job_dict[BaseModel.Fields._ID]
-
-        jobshifts = DatabaseManager.find(
-            Collection.JOBSHIFTS,
-            query_dict={JobShift.Fields.JOB_ID: job_id},
-            multiple=True
-        )
-        job_dict["jobshifts"] = jobshifts
-
-
-    @delete_handler
-    def delete(self, job_id):
-
-        # todo what if the first delete fails. Oh shitttt ;-)
-        result = DatabaseManager.remove(
-            Collection.JOBSHIFTS,
-            {JobShift.Fields.JOB_ID: job_id},
-            multiple=True
-        )
-        result = DatabaseManager.remove(
-            Collection.JOBS,
-            {BaseModel.Fields._ID: job_id},
-            multiple=False
-        )
-
-        if not result['err'] and result['n']:
-            return '', 204
-        else:
-            return '', 404

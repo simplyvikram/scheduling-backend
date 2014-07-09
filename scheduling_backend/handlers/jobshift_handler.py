@@ -1,10 +1,13 @@
-from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.handlers import no_data_handler, marshaling_handler
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import (
     schema_jobshift,
 )
 from scheduling_backend.models import JobShift, BaseModel
-from scheduling_backend.database_manager import Collection, DatabaseManager
+from scheduling_backend.utils import DateUtils
+from scheduling_backend.database_manager import (
+    Collection, DatabaseManager, JobOperations
+)
 from scheduling_backend.exceptions import UserException
 
 class JobShiftHandler(BaseHandler):
@@ -61,3 +64,45 @@ class JobShiftHandler(BaseHandler):
 
     def delete(self):
         raise UserException("Jobshifts cannot be deleted using apis")
+
+
+class ClearJobshiftsHandler(BaseHandler):
+
+    @no_data_handler
+    def get(self, for_date_str):
+
+        for_date_str = DateUtils.to_datetime_format(for_date_str,
+                                                    DateUtils.DATE).isoformat()
+
+        query_dict = {JobShift.Fields.JOB_DATE: for_date_str}
+        jobshifts = DatabaseManager.find(
+            Collection.JOBSHIFTS,
+            query_dict,
+            True
+        )
+
+        job_ids = map(lambda jobshift: jobshift[JobShift.Fields.JOB_ID],
+                      jobshifts)
+        jobshift_ids = map(lambda jobshift: jobshift[BaseModel.Fields._ID],
+                           jobshifts)
+
+        jobs = DatabaseManager.find_objects_by_ids(
+            Collection.JOBS, job_ids
+        )
+
+        jobshifts_documents = []
+        for job in jobs:
+            jobshift = JobShift(
+                job._id,
+                for_date_str,
+                job.scheduled_start_time,
+                job.scheduled_end_time
+            )
+            jobshifts_documents.append(JobShift.encode(jobshift))
+
+
+        # delete jobshifts for that date
+        JobOperations.delete_jobshifts(jobshift_ids)
+
+        # recreate new jobshifts for that date
+        DatabaseManager.insert(Collection.JOBSHIFTS, jobshifts_documents)
