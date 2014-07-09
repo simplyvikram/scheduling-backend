@@ -204,7 +204,7 @@ class JobOperations(object):
     def delete_jobshifts(jobshift_ids):
 
         remove_query_dict = dict()
-        remove_query_dict[BaseModel._id] = {'$in': jobshift_ids}
+        remove_query_dict[BaseModel.Fields._ID] = {'$in': jobshift_ids}
 
         DatabaseManager.remove(
             Collection.JOBSHIFTS,
