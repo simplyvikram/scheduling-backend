@@ -68,6 +68,9 @@ class JobShiftHandler(BaseHandler):
 
 class ClearJobshiftsHandler(BaseHandler):
 
+    def __init__(self):
+        super(ClearJobshiftsHandler, self).__init__(None)
+
     @no_data_handler
     def get(self, for_date_str):
 
