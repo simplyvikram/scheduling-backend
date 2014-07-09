@@ -109,3 +109,5 @@ class ClearJobshiftsHandler(BaseHandler):
 
         # recreate new jobshifts for that date
         DatabaseManager.insert(Collection.JOBSHIFTS, jobshifts_documents)
+
+        return '', 204
