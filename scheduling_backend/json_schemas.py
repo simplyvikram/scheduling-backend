@@ -43,6 +43,12 @@ schema_employee = {
         Employee.Fields.ACTIVE: {
             "type": "boolean"
         },
+        Employee.Fields.WEEKDAY_RATE: {
+            "type": "number"
+        },
+        Employee.Fields.WEEKEND_RATE: {
+            "type": "number"
+        }
     },
     "additionalProperties": False
 }
