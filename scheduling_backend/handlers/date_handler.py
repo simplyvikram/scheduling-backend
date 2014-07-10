@@ -42,7 +42,7 @@ class DateHandler(BaseHandler):
         )
 
         if not job_ids:
-            return {}
+            return []
 
         query_dict = {
             BaseModel.Fields._ID: {'$in': job_ids}
