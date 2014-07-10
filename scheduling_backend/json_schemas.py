@@ -84,6 +84,9 @@ schema_job = {
         Job.Fields.LOCATION: {
             "type": "string"
         },
+        Job.Fields.TIME_AND_MATERIAL: {
+            "type": "boolean"
+        },
         Job.Fields.START_DATE: {
             "type": "string",
             "format": "date"

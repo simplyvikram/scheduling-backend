@@ -115,6 +115,7 @@ class Job(BaseModel):
         CLIENT_ID = "client_id"
         NAME = "name"
         LOCATION = "location"
+        TIME_AND_MATERIAL = "time_and_material"
 
         START_DATE = "start_date"
         END_DATE = "end_date"
@@ -129,7 +130,7 @@ class Job(BaseModel):
     # DEFAULT_END_TIME = "05:00:00"
 
     def __init__(self,
-                 client_id, name, location,
+                 client_id, name, location, time_and_material,
                  start_date,
                  end_date,
                  scheduled_start_time,
@@ -140,6 +141,7 @@ class Job(BaseModel):
         self.client_id = client_id
         self.name = name
         self.location = location
+        self.time_and_material = time_and_material
 
         self.start_date = start_date
         self.end_date = end_date
@@ -154,6 +156,7 @@ class Job(BaseModel):
             Job.Fields.CLIENT_ID: job.client_id,
             Job.Fields.NAME: job.name,
             Job.Fields.LOCATION: job.location,
+            Job.Fields.TIME_AND_MATERIAL: job.time_and_material,
 
             Job.Fields.START_DATE: job.start_date,
             Job.Fields.END_DATE: job.end_date,

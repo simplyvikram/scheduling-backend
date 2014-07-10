@@ -21,8 +21,12 @@ def generate_job(client_id, client_name, location):
     start_date = date.today() + timedelta(days=random.randint(4, 10))
     end_date = date.today() + timedelta(days=random.randint(15, 25))
 
-    job = Job(client_id=client_id, start_date=start_date, end_date=end_date,
-              location=location)
+    job = Job(client_id=client_id,
+              name=client_name+ "xxx", location=location,
+              time_and_material=True,
+              start_date=start_date, end_date=end_date,
+              scheduled_start_time="08:00:00", scheduled_end_time="16:00:00"
+              )
 
     return Job.encode(job)
 
