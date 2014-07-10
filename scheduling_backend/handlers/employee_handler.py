@@ -1,8 +1,6 @@
 
 
 from bson.objectid import ObjectId
-from flask import current_app as current_app
-
 
 import flask.ext.restful.types
 
@@ -56,7 +54,6 @@ class EmployeeHandler(BaseHandler):
             Employee.Fields.NAME,
             ObjectId(employee_id)
         )
-        # self._validate_employee_name(name, ObjectId(employee_id))
 
 
     def preprocess_POST(self):

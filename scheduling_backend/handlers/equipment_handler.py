@@ -33,7 +33,7 @@ class EquipmentHandler(BaseHandler):
             Equipment.Fields.NAME,
             ObjectId(equipment_id)
         )
-        # self._validate_equipment_name(name, ObjectId(equipment_id))
+
 
     def preprocess_POST(self):
         name = self.data.get(Equipment.Fields.NAME, None)
@@ -45,7 +45,7 @@ class EquipmentHandler(BaseHandler):
             Collection.EQUIPMENT,
             Equipment.Fields.NAME
         )
-        # self._validate_equipment_name(name)
+
 
     @marshaling_handler
     def get(self, obj_id=None):
@@ -81,6 +81,7 @@ class EquipmentHandler(BaseHandler):
             Collection.EQUIPMENT, _id, True
         )
         return equipment_dict
+
 
     @marshaling_handler
     def patch(self, obj_id):
