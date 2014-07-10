@@ -111,7 +111,7 @@ class ModifyEmployeeShiftHandler(BaseHandler):
         self.validate_shift_role(shift_role)
 
         jobshift = DatabaseManager.find_object_by_id(
-            Collection.JOBSHIFTS, jobshift_id
+            Collection.JOBSHIFTS, jobshift_id, True
         )
 
         if not jobshift.contains_employee(employee_id):

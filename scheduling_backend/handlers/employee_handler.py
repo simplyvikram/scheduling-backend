@@ -45,10 +45,11 @@ class EmployeeHandler(BaseHandler):
         path = flask.request.path
         employee_id = path[-24:]
 
-        name = self.data.get(Employee.Fields.NAME, None)
         current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
+        if current_role is not None:
+            self._validate_current_role(current_role)
 
-        self._validate_current_role(current_role)
+        name = self.data.get(Employee.Fields.NAME, None)
         self.validate_name(
             name,
             Collection.EMPLOYEES,
@@ -81,45 +82,6 @@ class EmployeeHandler(BaseHandler):
             raise UserException("Allowed values for current_role are %s" %
                                 str(Employee.allowed_roles()))
 
-
-    # def _validate_employee_name(self, new_employee_name, employee_id=None):
-    #     """
-    #     employee_id would only be present for a PATCH.
-    #     It would be None in case of a POST
-    #     """
-    #
-    #     if new_employee_name == '':
-    #         raise UserException("Employee name cannot be empty")
-    #
-    #     matching_employee_count = DatabaseManager.find_count(
-    #         Collection.EMPLOYEES,
-    #         {Employee.Fields.NAME: new_employee_name}
-    #     )
-    #
-    #     if employee_id:
-    #         # This is a PATCH
-    #         employee = DatabaseManager.find_object_by_id(Collection.EMPLOYEES,
-    #                                                      employee_id,
-    #                                                      True)
-    #         if employee.name == new_employee_name:
-    #             # The old employee name is being passed in a patch, let it pass
-    #             pass
-    #         else:
-    #             # The employee name is being changed in the patch, check to make
-    #             # no other employee has the same name
-    #             if matching_employee_count >= 1:
-    #                 # This means some other employee has same name,
-    #                 #  as the new name, so we should not let
-    #                 #  two employees have the same name
-    #                 raise UserException("Another employee has the same name, "
-    #                                     "use another name")
-    #
-    #     else:
-    #         # This is a POST, so we only need to check if another employee has
-    #         # the same name or not
-    #         if matching_employee_count >= 1:
-    #             raise UserException("Another employee has the same name,"
-    #                                 " use another name")
 
     @marshaling_handler
     def get(self, obj_id=None):
