@@ -134,6 +134,9 @@ schema_employeeshift = {
         EmployeeShift.Fields.ACTUAL_END_TIME: {
             "type": "string",
             "format": "time"
+        },
+        EmployeeShift.Fields.NOTE: {
+            "type": "string"
         }
     },
     "additionalProperties": False
@@ -145,6 +148,9 @@ schema_equipmentshift = {
     "type": "object",
     "properties": {
         EquipmentShift.Fields.EQUIPMENT_ID: {
+            "type": "string"
+        },
+        EquipmentShift.Fields.NOTE: {
             "type": "string"
         }
     },
@@ -174,6 +180,9 @@ schema_jobshift = {
         JobShift.Fields.SCHEDULED_END_TIME: {
             "type": "string",
             "format": "time"
+        },
+        JobShift.Fields.NOTE: {
+            "type": "string"
         },
         JobShift.Fields.EMPLOYEE_SHIFTS: {
             "type": "array",

@@ -7,7 +7,6 @@ from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.handlers import (
     marshaling_handler, Params, delete_handler
 )
-from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
 from scheduling_backend.models import BaseModel, Client
@@ -42,7 +41,6 @@ class ClientHandler(BaseHandler):
             Client.Fields.NAME,
             ObjectId(client_id)
         )
-        # self.(client_name, ObjectId(client_id))
 
 
     def preprocess_POST(self):
@@ -52,46 +50,7 @@ class ClientHandler(BaseHandler):
             Collection.CLIENTS,
             Client.Fields.NAME
         )
-        # self._validate_client_name(client_name)
 
-
-    # def _validate_client_name(self, new_client_name, client_id=None):
-    #     """
-    #     client_id would only be present for a PATCH.
-    #     It would be None in case of a POST
-    #     """
-    #
-    #     if new_client_name == '':
-    #         raise UserException("Client name cannot be empty")
-    #
-    #     matching_client_count = DatabaseManager.find_count(
-    #         Collection.CLIENTS,
-    #         {Client.Fields.NAME: new_client_name}
-    #     )
-    #
-    #     if client_id:
-    #         # This is a PATCH
-    #         client = DatabaseManager.find_object_by_id(Collection.CLIENTS,
-    #                                                    client_id,
-    #                                                    True)
-    #         if client.name == new_client_name:
-    #             # The old client name is being passed in a patch, let it pass
-    #             pass
-    #         else:
-    #             # The client name is being changed in the patch, check to make
-    #             # no other client has the same name
-    #             if matching_client_count >= 1:
-    #                 # This means some other client has same name as the new name
-    #                 # so we should not let two clients have the same name
-    #                 raise UserException("Another client has the same name, "
-    #                                     "use another name")
-    #
-    #     else:
-    #         # This is a POST, so we only need to check if another client has
-    #         # the same name or not
-    #         if matching_client_count >= 1:
-    #             raise UserException("Another client has the same name,"
-    #                                 " use another name")
 
     @marshaling_handler
     def get(self, obj_id=None):

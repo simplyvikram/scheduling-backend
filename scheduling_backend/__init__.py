@@ -139,7 +139,8 @@ def register_views(app):
     from handlers.equipmentshift_handler import (
         AddEquipmentShiftHandler,
         RemoveEquipmentShiftHandler,
-        MoveEquipmentAcrossJobshifts
+        MoveEquipmentAcrossJobshifts,
+        ModifyEquipmentShiftHandler
     )
     from handlers.date_handler import DateHandler
     from handlers.copy_jobshift_handler import (
@@ -225,6 +226,11 @@ def register_views(app):
                      '/tojobshift/<ObjectId:to_jobshift_id>',
                      endpoint="moveequipmentshift")
 
+    api.add_resource(ModifyEquipmentShiftHandler,
+                     '/modify'
+                     '/jobshift/<ObjectId:jobshift_id>'
+                     '/equipment/<ObjectId:equipment_id>',
+                     endpoint="modifyequipmentshift")
 
     # add ability to modify role too
     api.add_resource(ModifyEmployeeShiftHandler,

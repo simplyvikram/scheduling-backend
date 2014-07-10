@@ -128,12 +128,16 @@ def copy_jobshift_contents(jobshift_id,
         employee_shift.actual_end_time = None
         # todo ask shaheen about scheduled start and end time
 
+        employee_shift.note = ''
+
         employee_shift_dict = EmployeeShift.encode(employee_shift)
         employee_shifts.append(employee_shift_dict)
 
     equipment_shifts = []
     for _dict in jobshift[JobShift.Fields.EQUIPMENT_SHIFTS]:
         equipment_shift = EquipmentShift(**_dict)
+
+        equipment_shift.note = ''
         equipment_shift_dict = EquipmentShift.encode(equipment_shift)
 
         equipment_shifts.append(equipment_shift_dict)

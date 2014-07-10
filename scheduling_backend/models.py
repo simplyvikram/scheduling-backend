@@ -182,13 +182,15 @@ class EmployeeShift(object):
         SCHEDULED_END_TIME = "scheduled_end_time"
         ACTUAL_START_TIME = "actual_start_time"
         ACTUAL_END_TIME = "actual_end_time"
+        NOTE = "note"
 
     def __init__(self, employee_id,
                  shift_role,
                  scheduled_start_time,
                  scheduled_end_time,
                  actual_start_time=None,
-                 actual_end_time=None):
+                 actual_end_time=None,
+                 note=''):
         """
         Use actual start/end times for all calculations. If they are
         absent use the scheduled start/end times for the calculations.
@@ -203,6 +205,7 @@ class EmployeeShift(object):
         self.scheduled_end_time = scheduled_end_time
         self.actual_start_time = actual_start_time
         self.actual_end_time = actual_end_time
+        self.note = note
 
 
     @classmethod
@@ -222,7 +225,9 @@ class EmployeeShift(object):
                 employeeshift.actual_start_time,
 
             EmployeeShift.Fields.ACTUAL_END_TIME:
-                employeeshift.actual_end_time
+                employeeshift.actual_end_time,
+
+            EmployeeShift.Fields.NOTE: employeeshift.note
         }
 
         return d
@@ -231,16 +236,19 @@ class EquipmentShift(object):
 
     class Fields(object):
         EQUIPMENT_ID = "equipment_id"
+        NOTE = "note"
 
-    def __init__(self, equipment_id):
+    def __init__(self, equipment_id, note=''):
         super(EquipmentShift, self).__init__()
 
         self.equipment_id = equipment_id
+        self.note = note
 
     @classmethod
     def encode(cls, equipment_shift):
         d = {
-            EquipmentShift.Fields.EQUIPMENT_ID: equipment_shift.equipment_id
+            EquipmentShift.Fields.EQUIPMENT_ID: equipment_shift.equipment_id,
+            EquipmentShift.Fields.NOTE: equipment_shift.note
         }
 
         return d
@@ -255,12 +263,15 @@ class JobShift(BaseModel):
         SCHEDULED_START_TIME = "scheduled_start_time"
         SCHEDULED_END_TIME = "scheduled_end_time"
 
+        NOTE = "note"
+
         EMPLOYEE_SHIFTS = "employee_shifts"
         EQUIPMENT_SHIFTS = "equipment_shifts"
 
     def __init__(self, job_id, job_date,
                  scheduled_start_time,
                  scheduled_end_time,
+                 note='',
                  employee_shifts=list(),
                  equipment_shifts=list(),
                  _id=None):
@@ -277,6 +288,8 @@ class JobShift(BaseModel):
 
         self.scheduled_start_time = scheduled_start_time
         self.scheduled_end_time = scheduled_end_time
+
+        self.note = note
 
         # We dont have a scenario now where this can happen,
         # but putting this for safety. If either employee_shifts or
@@ -302,8 +315,11 @@ class JobShift(BaseModel):
             JobShift.Fields.JOB_ID: job_shift.job_id,
             JobShift.Fields.JOB_DATE: job_shift.job_date,
 
-            JobShift.Fields.SCHEDULED_START_TIME: job_shift.scheduled_start_time,
-            JobShift.Fields.SCHEDULED_END_TIME: job_shift.scheduled_end_time
+            JobShift.Fields.SCHEDULED_START_TIME:
+                job_shift.scheduled_start_time,
+            JobShift.Fields.SCHEDULED_END_TIME: job_shift.scheduled_end_time,
+
+            JobShift.Fields.NOTE: job_shift.note
         }
         if job_shift._id:
             d[BaseModel.Fields._ID] = job_shift._id

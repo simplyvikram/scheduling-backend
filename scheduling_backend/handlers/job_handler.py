@@ -90,7 +90,7 @@ class JobHandler(BaseHandler):
     @delete_handler
     def delete(self, job_id):
 
-        # todo what if the first delete fails. Oh shitttt ;-)
+        # todo what if the first delete fails ;-)
         result = DatabaseManager.remove(
             Collection.JOBSHIFTS,
             {JobShift.Fields.JOB_ID: job_id},
@@ -232,10 +232,12 @@ class JobAndJobshiftCreationHelper(object):
                          scheduled_end_time_str):
         jobshifts = []
         for d in date_list:
-            jobshift = JobShift(job_id=job_id,
-                                job_date=d.isoformat(),
-                                scheduled_start_time=scheduled_start_time_str,
-                                scheduled_end_time=scheduled_end_time_str)
+            jobshift = JobShift(
+                job_id=job_id,
+                job_date=d.isoformat(),
+                scheduled_start_time=scheduled_start_time_str,
+                scheduled_end_time=scheduled_end_time_str
+            )
             jobshift_dict = JobShift.encode(jobshift)
             jobshifts.append(jobshift_dict)
 

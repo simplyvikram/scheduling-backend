@@ -27,10 +27,13 @@ class JobShiftHandler(BaseHandler):
     def preprocess_PATCH(self):
 
         for key in self.data.keys():
-            if key not in [JobShift.Fields.SCHEDULED_START_TIME,
-                           JobShift.Fields.SCHEDULED_END_TIME]:
-                raise UserException("Only scheduled start/end times can "
-                                    "be modified for jobshifts")
+            if key not in [
+                JobShift.Fields.SCHEDULED_START_TIME,
+                JobShift.Fields.SCHEDULED_END_TIME,
+                JobShift.Fields.NOTE
+            ]:
+                raise UserException("Only scheduled start/end times and note "
+                                    "can be modified for jobshifts")
 
 
     @marshaling_handler
@@ -96,10 +99,10 @@ class ClearJobshiftsHandler(BaseHandler):
         jobshifts_documents = []
         for job in jobs:
             jobshift = JobShift(
-                job._id,
-                for_date_str,
-                job.scheduled_start_time,
-                job.scheduled_end_time
+                job_id=job._id,
+                job_date=for_date_str,
+                scheduled_start_time=job.scheduled_start_time,
+                scheduled_end_time=job.scheduled_end_time
             )
             jobshifts_documents.append(JobShift.encode(jobshift))
 
