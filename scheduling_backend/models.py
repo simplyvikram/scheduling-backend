@@ -65,8 +65,8 @@ class Employee(BaseModel):
 
     @classmethod
     def allowed_roles(cls):
-        return ['plumber', 'worker', 'carpenter',
-                'fitter', 'slacker']
+        return ['Foreman', 'Layout', 'Operator','Worker']
+        # Carpenter, Driver, Labourer, Maintenance, Mechanic, Office, Owner, Supervisor, Warehouse
 
     def __repr__(self):
         return "<Employee %s:%s %s:%s, %s:%s, %s:%s>" % \
@@ -106,7 +106,7 @@ class Equipment(BaseModel):
 
     @classmethod
     def allowed_types(cls):
-        return ["fork lift", "bulldozer", "shovel", "hammer"]
+        return ["Backhoe", "Compactor", "Excavator", "Paver", "Truck"]
 
 
 class Job(BaseModel):
