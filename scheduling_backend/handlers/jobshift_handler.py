@@ -24,6 +24,7 @@ class JobShiftHandler(BaseHandler):
 
         return jobshift_dict
 
+
     def preprocess_PATCH(self):
 
         for key in self.data.keys():
@@ -59,8 +60,6 @@ class JobShiftHandler(BaseHandler):
         )
         return jobshift_dict
 
-
-    @marshaling_handler
     def post(self):
         raise UserException("Jobshifts cannot be created using apis")
 
