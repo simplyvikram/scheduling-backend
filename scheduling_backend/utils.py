@@ -1,6 +1,5 @@
 
-
-from bson.objectid import ObjectId, InvalidId
+from bson.objectid import ObjectId
 from datetime import datetime, date, time, timedelta
 import json
 
