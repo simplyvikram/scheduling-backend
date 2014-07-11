@@ -22,7 +22,6 @@ class Client(BaseModel):
         self.active = active
 
 
-
     @classmethod
     def encode(cls, client):
         d = {
