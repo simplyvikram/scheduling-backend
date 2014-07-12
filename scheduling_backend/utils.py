@@ -56,13 +56,13 @@ class JsonUtils(object):
 
         for key, value in obj.items():
 
-            if key.endswith('_date'):
+            if key.endswith('_date') and value is not None:
                 temp = DateUtils.to_datetime_format(value, DateUtils.DATE)
                 obj[key] = temp.isoformat()
-            elif key.endswith('_time'):
+            elif key.endswith('_time') and value is not None:
                 temp = DateUtils.to_datetime_format(value, DateUtils.TIME)
                 obj[key] = temp.isoformat()
-            elif key.endswith('_datetime'):
+            elif key.endswith('_datetime') and value is not None:
                 temp = DateUtils.to_datetime_format(value, DateUtils.DATETIME)
                 obj[key] = temp.isoformat()
 

@@ -126,19 +126,19 @@ schema_employeeshift = {
             "type": "string"
         },
         EmployeeShift.Fields.SCHEDULED_START_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.SCHEDULED_END_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.ACTUAL_START_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.ACTUAL_END_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.NOTE: {
