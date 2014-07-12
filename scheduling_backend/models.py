@@ -22,7 +22,6 @@ class Client(BaseModel):
         self.active = active
 
 
-
     @classmethod
     def encode(cls, client):
         d = {
@@ -41,13 +40,20 @@ class Employee(BaseModel):
         NAME = "name"
         CURRENT_ROLE = "current_role"
         ACTIVE = "active"
+        WEEKDAY_RATE = "weekday_rate"
+        WEEKEND_RATE = "weekend_rate"
 
-    def __init__(self, name, current_role, active, _id=None):
+    def __init__(self,
+                 name, current_role, active,
+                 weekday_rate=0, weekend_rate=0,
+                 _id=None):
         super(Employee, self).__init__(_id)
 
         self.name = name
         self.current_role = current_role
         self.active = active
+        self.weekday_rate = weekday_rate
+        self.weekend_rate = weekend_rate
 
 
     @classmethod
@@ -55,7 +61,10 @@ class Employee(BaseModel):
         d = {
             Employee.Fields.NAME: employee.name,
             Employee.Fields.CURRENT_ROLE: employee.current_role,
-            Employee.Fields.ACTIVE: employee.active
+            Employee.Fields.ACTIVE: employee.active,
+
+            Employee.Fields.WEEKDAY_RATE: employee.weekday_rate,
+            Employee.Fields.WEEKEND_RATE: employee.weekend_rate
         }
         if employee._id:
             d[BaseModel.Fields._ID] = employee._id

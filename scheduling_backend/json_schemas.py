@@ -43,6 +43,12 @@ schema_employee = {
         Employee.Fields.ACTIVE: {
             "type": "boolean"
         },
+        Employee.Fields.WEEKDAY_RATE: {
+            "type": "number"
+        },
+        Employee.Fields.WEEKEND_RATE: {
+            "type": "number"
+        }
     },
     "additionalProperties": False
 }
@@ -120,19 +126,19 @@ schema_employeeshift = {
             "type": "string"
         },
         EmployeeShift.Fields.SCHEDULED_START_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.SCHEDULED_END_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.ACTUAL_START_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.ACTUAL_END_TIME: {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "time"
         },
         EmployeeShift.Fields.NOTE: {

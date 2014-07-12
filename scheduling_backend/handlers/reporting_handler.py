@@ -46,25 +46,51 @@ class HoursWorkedPerEmployeeHandler(BaseHandler):
                             all_employees)
 
         lines = list()
+
         heading = extract_dates_heading_line(dates_strings)
+        heading = heading.split(',')
+        heading.append('Total hours worked')
+        heading.append('Weekday earnings')
+        heading.append('Weekend earnings')
+        heading.append('Total earnings')
+        heading = ','.join(heading)
+
         lines.append(heading)
 
         for employee in all_employees:
-            line = employee.name + '-' + str(employee._id)
+            # line = employee.name + '-' + str(employee._id)
+            line = employee.name
 
             hours_worked_dict = employees_hours_worked_dict.get(employee._id,
                                                                 None)
             # hours_worked_dict may be absent for that employee_id, indicating
             # that that employee did not work on any of the given dates
 
+            weekday_hours_worked = 0
+            weekend_hours_worked = 0
             for date_str in dates_strings:
 
                 hours_worked = 0
                 if hours_worked_dict:
                     hours_worked = hours_worked_dict.get(date_str, 0)
 
+                    if DateUtils.is_weekday(date_str):
+                        weekday_hours_worked += hours_worked
+                    else:
+                        weekend_hours_worked += hours_worked
+
                 line += ',' + str(hours_worked)
 
+            weekday_earnings = round(
+                float(weekday_hours_worked * employee.weekday_rate), 2
+            )
+            weekend_earnings = round(
+                float(weekend_hours_worked * employee.weekend_rate), 2
+            )
+            line += ',' + str(weekday_hours_worked + weekend_hours_worked)
+            line += ',' + str(weekday_earnings)
+            line += ',' + str(weekend_earnings)
+            line += ',' + str(weekday_earnings + weekend_earnings)
             lines.append(line)
 
         # we now create a temporary file using result and send it back
@@ -129,6 +155,11 @@ class HoursWorkedPerShiftRole(BaseHandler):
 
         lines = list()
         heading = extract_dates_heading_line(dates_strings)
+
+        heading = heading.split(',')
+        heading.append('Total hours worked')
+        heading = ','.join(heading)
+
         lines.append(heading)
 
         for role in all_shift_roles:
@@ -139,14 +170,17 @@ class HoursWorkedPerShiftRole(BaseHandler):
             # that no employee with the given role, worked on any of the
             # given dates
 
+            total_hours_worked = 0
             for date_str in dates_strings:
 
                 hours_worked = 0
                 if hours_worked_dict:
                     hours_worked = hours_worked_dict.get(date_str, 0)
+                    total_hours_worked += hours_worked
 
                 line += ',' + str(hours_worked)
 
+            line += ',' + str(total_hours_worked)
             lines.append(line)
 
         file_content = '\n'.join(lines)
@@ -163,11 +197,15 @@ class HoursWorkedPerShiftRole(BaseHandler):
 
 def extract_dates_heading_line(dates_strings):
 
-    line = map(lambda date_str: DateUtils.get_day_string(date_str) +
-                                ' ' +
-                                date_str,
-               dates_strings)
-    line.insert(0, ' ')
+    # line = map(lambda date_str: DateUtils.get_day_string(date_str) +
+    #                             ' ' +
+    #                             date_str,
+    #            dates_strings)
+
+    line = list(dates_strings)
+
+    line.insert(0, '')
+
     line = ','.join(line)
 
     return line
