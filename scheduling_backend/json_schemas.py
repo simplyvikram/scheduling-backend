@@ -72,6 +72,20 @@ schema_equipment = {
 }
 
 
+schema_user_login = {
+    "$schema": schema_type,
+    "title": "Equipment schema",
+    "type": "object",
+    "properties": {
+        "username" : {
+            "type": "string"
+        },
+        "password": {
+            "type": "string"
+        },
+    }
+}
+
 schema_job = {
     "$schema": schema_type,
     "title": "Job schema",
