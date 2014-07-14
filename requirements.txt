@@ -1,17 +1,18 @@
-Flask==0.10.1
-Flask-RESTful==0.2.5
-Flask-Script==0.6.2
-Jinja2==2.7.1
-MarkupSafe==0.18
-Werkzeug==0.9.4
-gunicorn==18.0
-itsdangerous==0.23
-jsonschema==2.3.0
-py==1.4.17
-pyOpenSSL==0.13.1
-pymongo==2.6.3
-pytest==2.4.2
-requests==2.2.1
-six==1.4.1
-validictory==0.9.1
-wsgiref==0.1.2
+Flask (0.10.1)
+Flask-RESTful (0.2.5)
+Flask-Script (0.6.2)
+Flask-SSLify (0.1.4)
+gunicorn (18.0)
+itsdangerous (0.23)
+Jinja2 (2.7.1)
+jsonschema (2.3.0)
+MarkupSafe (0.18)
+py (1.4.17)
+pymongo (2.6.3)
+pyOpenSSL (0.13.1)
+pytest (2.4.2)
+requests (2.2.1)
+six (1.4.1)
+validictory (0.9.1)
+Werkzeug (0.9.4)
+wsgiref (0.1.2)
