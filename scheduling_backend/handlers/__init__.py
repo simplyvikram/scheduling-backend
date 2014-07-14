@@ -60,7 +60,8 @@ def authentication_handler(func):
         )
 
         if not is_authenticated:
-            raise UserException("Could not authenticate user")
+            return "Cannot authenticte user", 401
+            # raise UserException("Could not authenticate user")
 
         return func(inst, *args, **kwargs)
 
