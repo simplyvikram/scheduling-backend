@@ -19,13 +19,7 @@ class LoginHandler(BaseHandler):
         super(LoginHandler, self).__init__(schema_user_login)
 
 
-    @marshaling_handler
     def post(self):
-
-
-        print "Inside login handler"
-        print "self.data.get", self.data.get
-
         try:
             username = self.data.get('username')
             password = self.data.get('password')
@@ -36,12 +30,13 @@ class LoginHandler(BaseHandler):
                 passwordhash=passwordhash
             )
             if not can_authenticate_user:
-                raise UserException('Cannot authenticate user')
+                return "Cannot authenticate user", 401
+                # raise UserException('Cannot authenticate user')
             else:
                 return {
                     User.Fields.USERNAME: username,
                     User.Fields.PASSWORDHASH: passwordhash
-                }
+                }, 200
 
         except Exception as e:
             raise UserException(e.message)
