@@ -66,6 +66,9 @@ schema_equipment = {
         },
         Equipment.Fields.TYPE: {
             "type": "string"
+        },
+        Equipment.Fields.ACTIVE: {
+            "type": "boolean"
         }
     },
     "additionalProperties": False

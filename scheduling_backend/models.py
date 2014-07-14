@@ -131,18 +131,21 @@ class Equipment(BaseModel):
     class Fields(object):
         NAME = "name"
         TYPE = "type"
+        ACTIVE = "active"
 
-    def __init__(self, name, type, _id=None):
+    def __init__(self, name, type, active, _id=None):
         super(Equipment, self).__init__(_id)
 
         self.name = name
         self.type = type
+        self.active = active
 
     @classmethod
     def encode(cls, equipment):
         d = {
             Equipment.Fields.NAME: equipment.name,
-            Equipment.Fields.TYPE: equipment.type
+            Equipment.Fields.TYPE: equipment.type,
+            Equipment.Fields.ACTIVE: equipment.active
         }
         if equipment._id:
             d[BaseModel.Fields._ID] = equipment._id
@@ -151,8 +154,10 @@ class Equipment(BaseModel):
 
     def __repr__(self):
 
-        _ = "<Employee name:{name}, type:{type}, _id:{_id}>"
-        _ = _.format(name=self.name, type=self.type, _id=self._id)
+        _ = "<Employee name:{name}, type:{type}, _id:{_id}, active:{active}>"
+        _ = _.format(
+            name=self.name, type=self.type, _id=self._id, active=self.active
+        )
         return _
 
     @classmethod
