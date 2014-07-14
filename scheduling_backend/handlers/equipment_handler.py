@@ -4,7 +4,9 @@ import flask
 from bson.objectid import ObjectId
 from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import marshaling_handler, delete_handler
+from scheduling_backend.handlers import (
+    authentication_handler, marshaling_handler, delete_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_equipment
 from scheduling_backend.models import BaseModel, Equipment
@@ -47,6 +49,7 @@ class EquipmentHandler(BaseHandler):
         )
 
 
+    @authentication_handler
     @marshaling_handler
     def get(self, obj_id=None):
 
@@ -62,6 +65,7 @@ class EquipmentHandler(BaseHandler):
             return equipment_list
 
 
+    @authentication_handler
     @marshaling_handler
     def post(self):
         """
@@ -83,6 +87,7 @@ class EquipmentHandler(BaseHandler):
         return equipment_dict
 
 
+    @authentication_handler
     @marshaling_handler
     def patch(self, obj_id):
 
@@ -99,6 +104,7 @@ class EquipmentHandler(BaseHandler):
         return equipment_dict
 
 
+    @authentication_handler
     @delete_handler
     def delete(self, obj_id):
 

@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from flask import make_response
 
-from scheduling_backend.handlers import Params
+from scheduling_backend.handlers import authentication_handler, Params
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.utils import DateUtils
 from scheduling_backend.models import Employee
@@ -18,6 +18,7 @@ class HoursWorkedPerEmployeeHandler(BaseHandler):
     def __init__(self):
         super(HoursWorkedPerEmployeeHandler, self).__init__(None)
 
+    @authentication_handler
     def get(self, from_date_str, to_date_str):
 
         from_date_str = DateUtils.to_datetime_format(from_date_str,
@@ -123,6 +124,8 @@ class HoursWorkedPerShiftRole(BaseHandler):
 
         self.args = self.req_parser.parse_args()
 
+
+    @authentication_handler
     def get(self, job_id):
 
         job = DatabaseManager.find_object_by_id(Collection.JOBS, job_id, True)

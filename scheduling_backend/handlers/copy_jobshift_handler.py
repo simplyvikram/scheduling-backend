@@ -1,6 +1,8 @@
 
 from scheduling_backend.handlers.base_handler import BaseHandler
-from scheduling_backend.handlers import no_data_handler, Params
+from scheduling_backend.handlers import (
+    authentication_handler, no_data_handler, Params
+)
 from scheduling_backend.models import (
     BaseModel, Job, JobShift, EmployeeShift, EquipmentShift
 )
@@ -29,6 +31,7 @@ class CopyJobshiftHandler(BaseHandler):
 
         self.args = self.req_parser.parse_args()
 
+    @authentication_handler
     @no_data_handler
     def get(self, jobshift_id, from_date_str, to_date_str):
 
@@ -69,6 +72,7 @@ class CopyAllJobshiftsHandler(BaseHandler):
         self.args = self.req_parser.parse_args()
 
 
+    @authentication_handler
     @no_data_handler
     def get(self, for_date_str, from_date_str, to_date_str):
 

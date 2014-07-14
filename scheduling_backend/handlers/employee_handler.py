@@ -7,7 +7,7 @@ import flask.ext.restful.types
 from scheduling_backend.database_manager import Collection, DatabaseManager
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import (
-    marshaling_handler, Params, delete_handler
+    authentication_handler, marshaling_handler, Params, delete_handler
 )
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employee
@@ -80,6 +80,7 @@ class EmployeeHandler(BaseHandler):
                                 str(Employee.allowed_roles()))
 
 
+    @authentication_handler
     @marshaling_handler
     def get(self, obj_id=None):
 
@@ -115,6 +116,7 @@ class EmployeeHandler(BaseHandler):
             return employee_list
 
 
+    @authentication_handler
     @marshaling_handler
     def post(self):
         """
@@ -132,6 +134,7 @@ class EmployeeHandler(BaseHandler):
         return employee_dict
 
 
+    @authentication_handler
     @marshaling_handler
     def patch(self, obj_id):
 
@@ -146,6 +149,7 @@ class EmployeeHandler(BaseHandler):
         )
         return employee_dict
 
+    @authentication_handler
     @delete_handler
     def delete(self, obj_id):
 

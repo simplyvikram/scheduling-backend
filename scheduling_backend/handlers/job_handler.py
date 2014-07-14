@@ -10,11 +10,11 @@ import flask.ext.restful.types
 from scheduling_backend.utils import DateUtils
 from scheduling_backend.database_manager import (
     DatabaseManager, Collection, JobOperations
-    )
+)
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers import (
-    Params, marshaling_handler, delete_handler
-    )
+    authentication_handler, Params, marshaling_handler, delete_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_job
 from scheduling_backend.models import BaseModel, Job, JobShift
@@ -57,6 +57,7 @@ class JobHandler(BaseHandler):
         pass
 
 
+    @authentication_handler
     @marshaling_handler
     def get(self, job_id=None):
 
@@ -87,6 +88,7 @@ class JobHandler(BaseHandler):
             return jobs_list
 
 
+    @authentication_handler
     @delete_handler
     def delete(self, job_id):
 
@@ -108,6 +110,7 @@ class JobHandler(BaseHandler):
             return '', 404
 
 
+    @authentication_handler
     @marshaling_handler
     def post(self):
         # We create a job object to make sure we have all the data we need
@@ -144,6 +147,7 @@ class JobHandler(BaseHandler):
         return job_dict
 
 
+    @authentication_handler
     @marshaling_handler
     def patch(self, job_id):
 

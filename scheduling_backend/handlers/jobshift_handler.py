@@ -1,4 +1,6 @@
-from scheduling_backend.handlers import no_data_handler, marshaling_handler
+from scheduling_backend.handlers import (
+    authentication_handler, no_data_handler, marshaling_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import (
     schema_jobshift,
@@ -15,6 +17,7 @@ class JobShiftHandler(BaseHandler):
     def __init__(self):
         super(JobShiftHandler, self).__init__(schema_jobshift)
 
+    @authentication_handler
     @marshaling_handler
     def get(self, jobshift_id):
 
@@ -37,6 +40,7 @@ class JobShiftHandler(BaseHandler):
                                     "can be modified for jobshifts")
 
 
+    @authentication_handler
     @marshaling_handler
     def patch(self, jobshift_id):
         """
@@ -73,6 +77,7 @@ class ClearJobshiftsHandler(BaseHandler):
     def __init__(self):
         super(ClearJobshiftsHandler, self).__init__(None)
 
+    @authentication_handler
     @no_data_handler
     def get(self, for_date_str):
 
