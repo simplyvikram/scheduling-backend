@@ -112,7 +112,8 @@ class AuthenticationUtils(object):
     @staticmethod
     def generate_passwordhash(password):
 
-        salt = uuid.uuid4().hex
+        # salt = uuid.uuid4().hex
+        salt = "vikram singh"
         passwordhash = hashlib.sha512(password + salt).hexdigest()
         return passwordhash
 
