@@ -6,6 +6,8 @@ from scheduling_backend.user_operations import (
 )
 from scheduling_backend.models import User
 from scheduling_backend.exceptions import UserException
+from scheduling_backend.json_schemas import schema_user_login
+
 
 
 # caution
@@ -14,11 +16,15 @@ from scheduling_backend.exceptions import UserException
 class LoginHandler(BaseHandler):
 
     def __init__(self):
-        super(LoginHandler, self).__init__(None)
+        super(LoginHandler, self).__init__(schema_user_login)
 
 
     @marshaling_handler
     def post(self):
+
+
+        print "Inside login handler"
+        print "self.data.get", self.data.get
 
         try:
             username = self.data.get('username')
