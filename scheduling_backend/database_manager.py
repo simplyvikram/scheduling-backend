@@ -48,9 +48,9 @@ class DatabaseManager(object):
                multi=True, upsert=False):
 
 
-        print "Inside update query_dict:", query_dict
-        print "Inside update update_dict:", update_dict
-        print "Inside update collection name", collection_name
+        # print "Inside update query_dict:", query_dict
+        # print "Inside update update_dict:", update_dict
+        # print "Inside update collection name", collection_name
         result = current_app.db[collection_name].update(
             query_dict,
             update_dict,

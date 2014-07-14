@@ -142,6 +142,7 @@ def register_views(app):
         MoveEquipmentAcrossJobshifts,
         ModifyEquipmentShiftHandler
     )
+    from handlers.authentication_handler import LoginHandler
     from handlers.date_handler import DateHandler
     from handlers.copy_jobshift_handler import (
         CopyJobshiftHandler,
@@ -155,6 +156,8 @@ def register_views(app):
         HoursWorkedPerEmployeeHandler,
         HoursWorkedPerShiftRole
     )
+
+    api.add_resource(LoginHandler, '/login', endpoint='login')
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
                      endpoint="client")

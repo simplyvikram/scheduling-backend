@@ -1,10 +1,13 @@
 
 from functools import wraps
 
+from flask.ext.restful.reqparse import RequestParser
 
-from scheduling_backend.utils import JsonUtils
+from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
-from scheduling_backend.models import Employee, Equipment
+from scheduling_backend.models import Employee, Equipment, User
+from scheduling_backend.utils import JsonUtils
+from scheduling_backend.user_operations import UserOperations
 
 class MessageDict(object):
     request_not_in_json = {"Error": "Request is not in valid json format"}
@@ -22,6 +25,61 @@ class Params(object):
     TO_DATE = "to_date"
     INCLUDE_SATURDAY = "include_saturday"
     INCLUDE_SUNDAY = "include_sunday"
+
+
+def authentication_handler(func):
+
+    @wraps(func)
+    def wrapper(inst, *args, **kwargs):
+
+        parser = RequestParser()
+        parser.add_argument(User.Fields.USERNAME,
+                            type=str,
+                            required=True,
+                            location='headers',
+                            help='username needs to be present in header')
+
+        parser.add_argument(User.Fields.PASSWORDHASH,
+                            type=str,
+                            required=True,
+                            location='headers',
+                            help='password hash needs to be present in header')
+
+
+        # from flask import request
+        # print "request headers from request.headers<<<%s>>>" % (request.headers,)
+
+        headers = parser.parse_args()
+
+        username = headers[User.Fields.USERNAME]
+        password_hash = headers[User.Fields.PASSWORDHASH]
+
+        is_authenticated = UserOperations.can_authenticate_user(
+            username=username,
+            passwordhash=password_hash
+        )
+
+        if not is_authenticated:
+            raise UserException("Could not authenticate user")
+
+        return func(inst, *args, **kwargs)
+
+    return wrapper
+
+
+# from flask import request, redirect, current_app
+# def ssl_required(fn):
+#     @wraps(fn)
+#     def decorated_view(*args, **kwargs):
+#         if current_app.config.get("SSL"):
+#             if request.is_secure:
+#                 return fn(*args, **kwargs)
+#             else:
+#                 return redirect(request.url.replace("http://", "https://"))
+#
+#         return fn(*args, **kwargs)
+#
+#     return decorated_view
 
 
 def marshaling_handler(func):

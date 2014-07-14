@@ -5,7 +5,8 @@ from bson.objectid import ObjectId
 
 from scheduling_backend.database_manager import DatabaseManager, Collection
 from scheduling_backend.handlers import (
-    marshaling_handler, Params, delete_handler
+    authentication_handler, delete_handler,
+    marshaling_handler, Params
 )
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_client
@@ -52,6 +53,7 @@ class ClientHandler(BaseHandler):
         )
 
 
+    @authentication_handler
     @marshaling_handler
     def get(self, obj_id=None):
 
@@ -81,6 +83,7 @@ class ClientHandler(BaseHandler):
             return clients_list
 
 
+    @authentication_handler
     @marshaling_handler
     def post(self):
         # We create a Client to make sure we have all the data we need to
@@ -96,7 +99,7 @@ class ClientHandler(BaseHandler):
 
         return client_dict
 
-
+    @authentication_handler
     @marshaling_handler
     def patch(self, obj_id):
 
@@ -115,7 +118,7 @@ class ClientHandler(BaseHandler):
         )
         return client_dict
 
-
+    @authentication_handler
     @delete_handler
     def delete(self, obj_id):
 

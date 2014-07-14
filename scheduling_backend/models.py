@@ -34,7 +34,45 @@ class Client(BaseModel):
         return d
 
 
+class User(BaseModel):
+
+    USER_COLLECTION_NAME = "users"
+
+    class Fields(object):
+
+        USERNAME = "username"
+        PASSWORDHASH = "passwordhash"
+        SETTINGS = "settings"
+
+
+    def __init__(self, username, passwordhash, settings=dict(), _id=None):
+
+        super(User, self).__init__(_id)
+        self.username = username
+        self.passwordhash = passwordhash
+        self.settings = settings
+
+    @classmethod
+    def encode(cls, user):
+        d = {
+            User.Fields.USERNAME: user.username,
+            User.Fields.PASSWORDHASH: user.passwordhash,
+            User.Fields.SETTINGS: user.settings
+        }
+        if user._id:
+            d[BaseModel.Fields._ID] = user._id
+
+        return d
+
+    def __repr__(self):
+        return "<User %s:%s %s:%s %s:%s>" % \
+               (BaseModel.Fields._ID, str(self._id),
+                User.Fields.USERNAME, self.username,
+                User.Fields.PASSWORDHASH, self.passwordhash)
+
+
 class Employee(BaseModel):
+
 
     class Fields(object):
         NAME = "name"
