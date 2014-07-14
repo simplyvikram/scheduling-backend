@@ -43,21 +43,24 @@ class User(BaseModel):
         USERNAME = "username"
         PASSWORDHASH = "passwordhash"
         SETTINGS = "settings"
+        NAME = 'name'
 
 
-    def __init__(self, username, passwordhash, settings=dict(), _id=None):
+    def __init__(self, username, passwordhash, settings='', name='', _id=None):
 
         super(User, self).__init__(_id)
         self.username = username
         self.passwordhash = passwordhash
         self.settings = settings
+        self.name = name
 
     @classmethod
     def encode(cls, user):
         d = {
             User.Fields.USERNAME: user.username,
             User.Fields.PASSWORDHASH: user.passwordhash,
-            User.Fields.SETTINGS: user.settings
+            User.Fields.SETTINGS: user.settings,
+            User.Fields.NAME: user.name
         }
         if user._id:
             d[BaseModel.Fields._ID] = user._id
@@ -65,10 +68,11 @@ class User(BaseModel):
         return d
 
     def __repr__(self):
-        return "<User %s:%s %s:%s %s:%s>" % \
+        return "<User %s:%s %s:%s %s:%s %s:%s>" % \
                (BaseModel.Fields._ID, str(self._id),
                 User.Fields.USERNAME, self.username,
-                User.Fields.PASSWORDHASH, self.passwordhash)
+                User.Fields.PASSWORDHASH, self.passwordhash,
+                User.Fields.NAME, self.name)
 
 
 class Employee(BaseModel):

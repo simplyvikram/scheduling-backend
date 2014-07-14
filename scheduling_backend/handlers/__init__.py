@@ -2,8 +2,8 @@
 from functools import wraps
 
 from flask.ext.restful.reqparse import RequestParser
+from flask import request
 
-from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.models import Employee, Equipment, User
 from scheduling_backend.utils import JsonUtils
@@ -32,34 +32,31 @@ def authentication_handler(func):
     @wraps(func)
     def wrapper(inst, *args, **kwargs):
 
-        parser = RequestParser()
-        parser.add_argument(User.Fields.USERNAME,
+        header_parser = RequestParser()
+        header_parser.add_argument(User.Fields.USERNAME,
                             type=str,
                             required=True,
                             location='headers',
                             help='username needs to be present in header')
 
-        parser.add_argument(User.Fields.PASSWORDHASH,
+        header_parser.add_argument(User.Fields.PASSWORDHASH,
                             type=str,
                             required=True,
                             location='headers',
                             help='password hash needs to be present in header')
 
+        headers = header_parser.parse_args()
 
-        # from flask import request
-        # print "request headers from request.headers<<<%s>>>" % (request.headers,)
+        request._username = headers[User.Fields.USERNAME]
+        request._passwordhash = headers[User.Fields.PASSWORDHASH]
 
-        headers = parser.parse_args()
-
-        username = headers[User.Fields.USERNAME]
-        password_hash = headers[User.Fields.PASSWORDHASH]
-
-        is_authenticated = UserOperations.can_authenticate_user(
-            username=username,
-            passwordhash=password_hash
+        user = UserOperations.find_user_with_passwordhash(
+            request._username,
+            request._passwordhash
         )
 
-        if not is_authenticated:
+
+        if not user:
             return "Cannot authenticte user", 401
             # raise UserException("Could not authenticate user")
 
