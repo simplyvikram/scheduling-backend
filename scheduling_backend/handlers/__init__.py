@@ -34,16 +34,16 @@ def authentication_handler(func):
 
         header_parser = RequestParser()
         header_parser.add_argument(User.Fields.USERNAME,
-                            type=str,
-                            required=True,
-                            location='headers',
-                            help='username needs to be present in header')
+                                   type=str,
+                                   required=True,
+                                   location='headers',
+                                   help='username needs to be present in header')
 
         header_parser.add_argument(User.Fields.PASSWORDHASH,
-                            type=str,
-                            required=True,
-                            location='headers',
-                            help='password hash needs to be present in header')
+                                   type=str,
+                                   required=True,
+                                   location='headers',
+                                   help='password hash needs to be present in header')
 
         headers = header_parser.parse_args()
 

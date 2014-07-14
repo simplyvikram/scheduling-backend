@@ -142,7 +142,7 @@ def register_views(app):
         MoveEquipmentAcrossJobshifts,
         ModifyEquipmentShiftHandler
     )
-    from handlers.authentication_handler import LoginHandler, UpdateUserHandler
+    from handlers.user_handler import LoginHandler, UpdateUserHandler
     from handlers.date_handler import DateHandler
     from handlers.copy_jobshift_handler import (
         CopyJobshiftHandler,
