@@ -37,7 +37,7 @@ schema_employee = {
         Employee.Fields.NAME: {
             "type": "string"
         },
-        Employee.Fields.CURRENT_ROLE: {
+        Employee.Fields.DEFAULT_ROLE: {
             "type": "string"
         },
         Employee.Fields.ACTIVE: {

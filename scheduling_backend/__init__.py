@@ -193,7 +193,7 @@ def register_views(app):
     api.add_resource(ClearJobshiftsHandler,
                      '/clear/alljobshifts/for_date/<string:for_date_str>')
 
-    # params shift_role, if absent use employee's current role
+    # params shift_role, if absent use employee's default role
     api.add_resource(AddEmployeeShiftHandler,
                      '/add'
                      '/employee/<ObjectId:employee_id>'

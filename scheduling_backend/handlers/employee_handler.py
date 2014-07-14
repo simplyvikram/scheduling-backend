@@ -26,7 +26,7 @@ class EmployeeHandler(BaseHandler):
                                      default=None,
                                      required=False)
 
-        self.req_parser.add_argument(Params.CURRENT_ROLE,
+        self.req_parser.add_argument(Params.DEFAULT_ROLE,
                                      type=str,
                                      location='args',
                                      default=None,
@@ -43,9 +43,9 @@ class EmployeeHandler(BaseHandler):
         path = flask.request.path
         employee_id = path[-24:]
 
-        current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
-        if current_role is not None:
-            self._validate_current_role(current_role)
+        default_role = self.data.get(Employee.Fields.DEFAULT_ROLE, None)
+        if default_role is not None:
+            self._validate_default_role(default_role)
 
         name = self.data.get(Employee.Fields.NAME, None)
         self.validate_name(
@@ -58,9 +58,9 @@ class EmployeeHandler(BaseHandler):
 
     def preprocess_POST(self):
         name = self.data.get(Employee.Fields.NAME, None)
-        current_role = self.data.get(Employee.Fields.CURRENT_ROLE, None)
+        default_role = self.data.get(Employee.Fields.DEFAULT_ROLE, None)
 
-        self._validate_current_role(current_role)
+        self._validate_default_role(default_role)
         self.validate_name(
             name,
             Collection.EMPLOYEES,
@@ -69,14 +69,14 @@ class EmployeeHandler(BaseHandler):
         # self._validate_employee_name(name)
 
 
-    def _validate_current_role(self, current_role):
+    def _validate_default_role(self, default_role):
         """
         We validate that the employee role is present is a valid one
         """
-        if current_role is '':
-            raise UserException("current_role cannot be empty.")
-        elif current_role not in Employee.allowed_roles():
-            raise UserException("Allowed values for current_role are %s" %
+        if default_role is '':
+            raise UserException("default_role cannot be empty.")
+        elif default_role not in Employee.allowed_roles():
+            raise UserException("Allowed values for default_role are %s" %
                                 str(Employee.allowed_roles()))
 
 
@@ -103,11 +103,11 @@ class EmployeeHandler(BaseHandler):
             elif active is False:
                 query_dict[Employee.Fields.ACTIVE] = False
 
-            current_role = self.args.get(Params.CURRENT_ROLE, None)
-            if current_role is not None:
+            default_role = self.args.get(Params.DEFAULT_ROLE, None)
+            if default_role is not None:
                 # It can be empty, but validate will take care of it
-                self._validate_current_role(current_role)
-                query_dict[Employee.Fields.CURRENT_ROLE] = current_role
+                self._validate_default_role(default_role)
+                query_dict[Employee.Fields.DEFAULT_ROLE] = default_role
 
             employee_list = DatabaseManager.find(
                 Collection.EMPLOYEES, query_dict, True

@@ -80,19 +80,19 @@ class Employee(BaseModel):
 
     class Fields(object):
         NAME = "name"
-        CURRENT_ROLE = "current_role"
+        DEFAULT_ROLE = "default_role"
         ACTIVE = "active"
         WEEKDAY_RATE = "weekday_rate"
         WEEKEND_RATE = "weekend_rate"
 
     def __init__(self,
-                 name, current_role, active,
+                 name, default_role, active,
                  weekday_rate=0, weekend_rate=0,
                  _id=None):
         super(Employee, self).__init__(_id)
 
         self.name = name
-        self.current_role = current_role
+        self.default_role = default_role
         self.active = active
         self.weekday_rate = weekday_rate
         self.weekend_rate = weekend_rate
@@ -102,7 +102,7 @@ class Employee(BaseModel):
     def encode(cls, employee):
         d = {
             Employee.Fields.NAME: employee.name,
-            Employee.Fields.CURRENT_ROLE: employee.current_role,
+            Employee.Fields.DEFAULT_ROLE: employee.default_role,
             Employee.Fields.ACTIVE: employee.active,
 
             Employee.Fields.WEEKDAY_RATE: employee.weekday_rate,
@@ -123,7 +123,7 @@ class Employee(BaseModel):
         return "<Employee %s:%s %s:%s, %s:%s, %s:%s>" % \
                (BaseModel.Fields._ID, str(self._id),
                 Employee.Fields.NAME, self.name,
-                Employee.Fields.CURRENT_ROLE, self.current_role,
+                Employee.Fields.DEFAULT_ROLE, self.default_role,
                 Employee.Fields.ACTIVE, str(self.active))
 
 class Equipment(BaseModel):

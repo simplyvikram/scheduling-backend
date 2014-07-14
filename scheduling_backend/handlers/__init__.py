@@ -18,7 +18,7 @@ class Params(object):
     INCLUDE_JOBSHIFTS = "includejobshifts"
     INCLUDE_EMPLOYEESHIFTS = "includeemployeeshifts"
     ACTIVE = "active"
-    CURRENT_ROLE = "current_role"
+    DEFAULT_ROLE = "default_role"
     SHIFT_ROLE = "shift_role"
     JOB_ID = "job_id"
     FROM_DATE = "from_date"

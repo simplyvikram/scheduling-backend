@@ -26,8 +26,8 @@ def insert_employee():
     name = "employee_ " + str(1)
 
     active = True
-    current_role = Employee.allowed_roles()[0]
-    employee = Employee(name, current_role, active)
+    default_role = Employee.allowed_roles()[0]
+    employee = Employee(name, default_role, active)
 
     db.employees.insert(Employee.encode(employee))
 
