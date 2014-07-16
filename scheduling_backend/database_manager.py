@@ -471,7 +471,7 @@ class JobOperations(object):
         )
 
         if not shift_role:
-            shift_role = employee.current_role
+            shift_role = employee.default_role
 
         JobOperations._employee_active_to_be_scheduled(employee_id)
         JobOperations._can_we_schedule_employee_for_jobshift(employee_id,
@@ -566,7 +566,7 @@ class JobOperations(object):
             )
 
         if not shift_role:
-            shift_role = employee.current_role
+            shift_role = employee.default_role
 
         remove_result = JobOperations._force_remove_employeeshift(
             employee_id, from_jobshift_id

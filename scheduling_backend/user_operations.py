@@ -2,15 +2,18 @@
 import uuid
 import hashlib
 
+
 from scheduling_backend.database_manager import DatabaseManager, Collection
+from scheduling_backend.exceptions import UserException
 from scheduling_backend.models import User
+
 
 
 
 class UserOperations(object):
 
     @staticmethod
-    def create_user(username, password):
+    def create_user(username, password, name):
         """
         Throws an excpetion if a user with the same name exists
         """
@@ -18,9 +21,9 @@ class UserOperations(object):
         if existing_user:
             raise Exception("Another user with the following name exists!")
 
+        passwordhash = AuthenticationUtils.generate_passwordhash(password)
         user = User(
-            username,
-            AuthenticationUtils.generate_passwordhash(password)
+            username=username, passwordhash=passwordhash, name=name
         )
         user_dict = User.encode(user)
 
@@ -28,6 +31,58 @@ class UserOperations(object):
             User.USER_COLLECTION_NAME,
             user_dict
         )
+
+
+    # todo merge the two methods to find user, make password optional
+    @staticmethod
+    def find_user_with_passwordhash(username, passwordhash):
+        query = {
+            User.Fields.USERNAME: username,
+            User.Fields.PASSWORDHASH: passwordhash
+        }
+        user_dict = DatabaseManager.find(
+            User.USER_COLLECTION_NAME, query_dict=query, multiple=False
+        )
+
+        if user_dict:
+            return User(**user_dict)
+        else:
+            return None
+
+    @staticmethod
+    def update_user(username, passwordhash, _dict):
+        """
+        Updates user with the dict, and returns the updated user
+        """
+
+        user = UserOperations.find_user_with_passwordhash(
+            username, passwordhash
+        )
+        if not user:
+            raise UserException('Could not find user')
+
+        if len(_dict.keys()) == 0:
+            return user
+
+        query_dict = {
+            User.Fields.USERNAME: username,
+            User.Fields.PASSWORDHASH: passwordhash
+        }
+        update_dict = {
+            "$set": _dict
+        }
+
+        DatabaseManager.update(
+            User.USER_COLLECTION_NAME,
+            query_dict,
+            update_dict,
+            multi=False, upsert=False
+        )
+
+        return UserOperations.find_user_with_passwordhash(
+            username, passwordhash
+        )
+
 
     @staticmethod
     def find_user(username):
@@ -62,7 +117,6 @@ class UserOperations(object):
             }
         }
 
-
         DatabaseManager.update(
             User.USER_COLLECTION_NAME,
             query_dict=query_dict,
@@ -70,41 +124,6 @@ class UserOperations(object):
             multi=False,
             upsert=False
         )
-
-
-    @staticmethod
-    def can_authenticate_user(username, passwordhash):
-
-        query_dict = {
-            User.Fields.USERNAME: username,
-            User.Fields.PASSWORDHASH: passwordhash
-        }
-
-        document = DatabaseManager.find(
-            User.USER_COLLECTION_NAME,
-            query_dict,
-            multiple=False
-        )
-        if document:
-            return True
-        else:
-            return False
-
-
-    # @staticmethod
-    # def is_valid(username, password):
-    #     query_dict = {
-    #         User.Fields.USERNAME: username,
-    #         User.Fields.PASSWORDHASH:
-    #             AuthenticationUtils.generate_password_hash(password)
-    #     }
-    #     found_user = DatabaseManager.find(
-    #         User.USER_COLLECTION_NAME, query_dict=query_dict, multiple=False
-    #     )
-    #     if found_user:
-    #         return True
-    #     else:
-    #         return False
 
 
 class AuthenticationUtils(object):
@@ -116,7 +135,3 @@ class AuthenticationUtils(object):
         salt = "vikram singh"
         passwordhash = hashlib.sha512(password + salt).hexdigest()
         return passwordhash
-
-
-
-

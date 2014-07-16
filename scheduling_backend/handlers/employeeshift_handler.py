@@ -6,8 +6,12 @@ from scheduling_backend.database_manager import (
 )
 
 from scheduling_backend.exceptions import UserException
-from scheduling_backend.handlers import no_data_handler, marshaling_handler, \
+from scheduling_backend.handlers import (
+    authentication_handler,
+    no_data_handler,
+    marshaling_handler,
     Params
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.json_schemas import schema_employeeshift
 from scheduling_backend.models import EmployeeShift, Employee
@@ -28,6 +32,8 @@ class AddEmployeeShiftHandler(BaseHandler):
 
         self.args = self.req_parser.parse_args()
 
+
+    @authentication_handler
     @marshaling_handler
     def get(self, employee_id, jobshift_id):
 
@@ -50,6 +56,7 @@ class RemoveEmployeeShiftHandler(BaseHandler):
         super(RemoveEmployeeShiftHandler, self).__init__(None)
 
 
+    @authentication_handler
     @marshaling_handler
     def get(self, employee_id, jobshift_id):
 
@@ -79,6 +86,7 @@ class MoveEmployeeAcrossJobshifts(BaseHandler):
         self.args = self.req_parser.parse_args()
 
 
+    @authentication_handler
     @no_data_handler
     def get(self, employee_id, from_jobshift_id, to_jobshift_id):
 
@@ -104,6 +112,7 @@ class ModifyEmployeeShiftHandler(BaseHandler):
             raise UserException("employee id cannot be present as"
                                 " part of patch data")
 
+    @authentication_handler
     @marshaling_handler
     def patch(self, jobshift_id, employee_id):
 

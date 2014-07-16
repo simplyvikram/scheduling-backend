@@ -142,7 +142,7 @@ def register_views(app):
         MoveEquipmentAcrossJobshifts,
         ModifyEquipmentShiftHandler
     )
-    from handlers.authentication_handler import LoginHandler
+    from handlers.user_handler import LoginHandler, UpdateUserHandler
     from handlers.date_handler import DateHandler
     from handlers.copy_jobshift_handler import (
         CopyJobshiftHandler,
@@ -158,6 +158,10 @@ def register_views(app):
     )
 
     api.add_resource(LoginHandler, '/login', endpoint='login')
+
+    # Only GET with settings and name as parameters
+    api.add_resource(UpdateUserHandler, '/updateuser', endpoint='updateuser')
+
 
     api.add_resource(ClientHandler, '/clients/<ObjectId:obj_id>',
                      endpoint="client")
@@ -189,7 +193,7 @@ def register_views(app):
     api.add_resource(ClearJobshiftsHandler,
                      '/clear/alljobshifts/for_date/<string:for_date_str>')
 
-    # params shift_role, if absent use employee's current role
+    # params shift_role, if absent use employee's default role
     api.add_resource(AddEmployeeShiftHandler,
                      '/add'
                      '/employee/<ObjectId:employee_id>'

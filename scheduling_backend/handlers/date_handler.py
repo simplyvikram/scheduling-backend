@@ -1,5 +1,7 @@
 
-from scheduling_backend.handlers import marshaling_handler
+from scheduling_backend.handlers import (
+    authentication_handler, marshaling_handler
+)
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.exceptions import UserException
 from scheduling_backend.database_manager import DatabaseManager, Collection
@@ -13,7 +15,7 @@ class DateHandler(BaseHandler):
     def __init__(self):
         super(DateHandler, self).__init__(None)
 
-
+    @authentication_handler
     @marshaling_handler
     def get(self, collection_name, _date):
 

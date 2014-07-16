@@ -43,21 +43,24 @@ class User(BaseModel):
         USERNAME = "username"
         PASSWORDHASH = "passwordhash"
         SETTINGS = "settings"
+        NAME = 'name'
 
 
-    def __init__(self, username, passwordhash, settings=dict(), _id=None):
+    def __init__(self, username, passwordhash, settings='', name='', _id=None):
 
         super(User, self).__init__(_id)
         self.username = username
         self.passwordhash = passwordhash
         self.settings = settings
+        self.name = name
 
     @classmethod
     def encode(cls, user):
         d = {
             User.Fields.USERNAME: user.username,
             User.Fields.PASSWORDHASH: user.passwordhash,
-            User.Fields.SETTINGS: user.settings
+            User.Fields.SETTINGS: user.settings,
+            User.Fields.NAME: user.name
         }
         if user._id:
             d[BaseModel.Fields._ID] = user._id
@@ -65,10 +68,11 @@ class User(BaseModel):
         return d
 
     def __repr__(self):
-        return "<User %s:%s %s:%s %s:%s>" % \
+        return "<User %s:%s %s:%s %s:%s %s:%s>" % \
                (BaseModel.Fields._ID, str(self._id),
                 User.Fields.USERNAME, self.username,
-                User.Fields.PASSWORDHASH, self.passwordhash)
+                User.Fields.PASSWORDHASH, self.passwordhash,
+                User.Fields.NAME, self.name)
 
 
 class Employee(BaseModel):
@@ -76,19 +80,19 @@ class Employee(BaseModel):
 
     class Fields(object):
         NAME = "name"
-        CURRENT_ROLE = "current_role"
+        DEFAULT_ROLE = "default_role"
         ACTIVE = "active"
         WEEKDAY_RATE = "weekday_rate"
         WEEKEND_RATE = "weekend_rate"
 
     def __init__(self,
-                 name, current_role, active,
+                 name, default_role, active,
                  weekday_rate=0, weekend_rate=0,
                  _id=None):
         super(Employee, self).__init__(_id)
 
         self.name = name
-        self.current_role = current_role
+        self.default_role = default_role
         self.active = active
         self.weekday_rate = weekday_rate
         self.weekend_rate = weekend_rate
@@ -98,7 +102,7 @@ class Employee(BaseModel):
     def encode(cls, employee):
         d = {
             Employee.Fields.NAME: employee.name,
-            Employee.Fields.CURRENT_ROLE: employee.current_role,
+            Employee.Fields.DEFAULT_ROLE: employee.default_role,
             Employee.Fields.ACTIVE: employee.active,
 
             Employee.Fields.WEEKDAY_RATE: employee.weekday_rate,
@@ -119,7 +123,7 @@ class Employee(BaseModel):
         return "<Employee %s:%s %s:%s, %s:%s, %s:%s>" % \
                (BaseModel.Fields._ID, str(self._id),
                 Employee.Fields.NAME, self.name,
-                Employee.Fields.CURRENT_ROLE, self.current_role,
+                Employee.Fields.DEFAULT_ROLE, self.default_role,
                 Employee.Fields.ACTIVE, str(self.active))
 
 class Equipment(BaseModel):
@@ -127,18 +131,21 @@ class Equipment(BaseModel):
     class Fields(object):
         NAME = "name"
         TYPE = "type"
+        ACTIVE = "active"
 
-    def __init__(self, name, type, _id=None):
+    def __init__(self, name, type, active, _id=None):
         super(Equipment, self).__init__(_id)
 
         self.name = name
         self.type = type
+        self.active = active
 
     @classmethod
     def encode(cls, equipment):
         d = {
             Equipment.Fields.NAME: equipment.name,
-            Equipment.Fields.TYPE: equipment.type
+            Equipment.Fields.TYPE: equipment.type,
+            Equipment.Fields.ACTIVE: equipment.active
         }
         if equipment._id:
             d[BaseModel.Fields._ID] = equipment._id
@@ -147,8 +154,10 @@ class Equipment(BaseModel):
 
     def __repr__(self):
 
-        _ = "<Employee name:{name}, type:{type}, _id:{_id}>"
-        _ = _.format(name=self.name, type=self.type, _id=self._id)
+        _ = "<Employee name:{name}, type:{type}, _id:{_id}, active:{active}>"
+        _ = _.format(
+            name=self.name, type=self.type, _id=self._id, active=self.active
+        )
         return _
 
     @classmethod

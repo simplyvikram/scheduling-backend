@@ -2,8 +2,8 @@
 from functools import wraps
 
 from flask.ext.restful.reqparse import RequestParser
+from flask import request
 
-from scheduling_backend.exceptions import UserException
 from scheduling_backend.handlers.base_handler import BaseHandler
 from scheduling_backend.models import Employee, Equipment, User
 from scheduling_backend.utils import JsonUtils
@@ -18,7 +18,7 @@ class Params(object):
     INCLUDE_JOBSHIFTS = "includejobshifts"
     INCLUDE_EMPLOYEESHIFTS = "includeemployeeshifts"
     ACTIVE = "active"
-    CURRENT_ROLE = "current_role"
+    DEFAULT_ROLE = "default_role"
     SHIFT_ROLE = "shift_role"
     JOB_ID = "job_id"
     FROM_DATE = "from_date"
@@ -32,34 +32,31 @@ def authentication_handler(func):
     @wraps(func)
     def wrapper(inst, *args, **kwargs):
 
-        parser = RequestParser()
-        parser.add_argument(User.Fields.USERNAME,
-                            type=str,
-                            required=True,
-                            location='headers',
-                            help='username needs to be present in header')
+        header_parser = RequestParser()
+        header_parser.add_argument(User.Fields.USERNAME,
+                                   type=str,
+                                   required=True,
+                                   location='headers',
+                                   help='username needs to be present in header')
 
-        parser.add_argument(User.Fields.PASSWORDHASH,
-                            type=str,
-                            required=True,
-                            location='headers',
-                            help='password hash needs to be present in header')
+        header_parser.add_argument(User.Fields.PASSWORDHASH,
+                                   type=str,
+                                   required=True,
+                                   location='headers',
+                                   help='password hash needs to be present in header')
 
+        headers = header_parser.parse_args()
 
-        # from flask import request
-        # print "request headers from request.headers<<<%s>>>" % (request.headers,)
+        request._username = headers[User.Fields.USERNAME]
+        request._passwordhash = headers[User.Fields.PASSWORDHASH]
 
-        headers = parser.parse_args()
-
-        username = headers[User.Fields.USERNAME]
-        password_hash = headers[User.Fields.PASSWORDHASH]
-
-        is_authenticated = UserOperations.can_authenticate_user(
-            username=username,
-            passwordhash=password_hash
+        user = UserOperations.find_user_with_passwordhash(
+            request._username,
+            request._passwordhash
         )
 
-        if not is_authenticated:
+
+        if not user:
             return "Cannot authenticte user", 401
             # raise UserException("Could not authenticate user")
 
@@ -139,7 +136,8 @@ def delete_handler(func):
 
 
 # todo fix this soon
-# merge it with delete_handler() maybe??
+# todo merge it with delete_handler() maybe??
+# todo bad name, we actually return data here
 def no_data_handler(func):
     cors_headers = {
         'Access-Control-Allow-Origin': '*'

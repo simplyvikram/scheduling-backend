@@ -48,15 +48,16 @@ class CreateUser(Command):
     description = "create_user -u username -p password"
     option_list = (
         Option('--username', '-u', dest='username', required=True),
+        Option('--name', '-n', dest='name', required=True),
         Option('--password', '-p', dest='password', required=True)
     )
 
-    def run(self, username, password):
+    def run(self, username, name, password):
         print "Inside createUser username <%s>" % (username,)
+        print "Inside createUser name <%s>" % (name,)
         print "Inside createUser password <%s>" % (password,)
 
-        password_hash = password
-        UserOperations.create_user(username, password_hash)
+        UserOperations.create_user(username, password, name)
 
         print "Created a user <%s>" % (username,)
 
