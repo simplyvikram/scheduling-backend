@@ -66,7 +66,8 @@ class BaseHandler(Resource):
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Max-Age': 1728000,
             'Access-Control-Allow-Methods': 'DELETE, GET, POST, PATCH',
-            'Access-Control-Allow-Headers': 'accept, origin, content-type'
+            'Access-Control-Allow-Headers':
+                'accept, origin, content-type, username, passwordhash'
         }
         return "", 200, headers_dict
 
