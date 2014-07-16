@@ -136,7 +136,8 @@ def delete_handler(func):
 
 
 # todo fix this soon
-# merge it with delete_handler() maybe??
+# todo merge it with delete_handler() maybe??
+# todo bad name, we actually return data here
 def no_data_handler(func):
     cors_headers = {
         'Access-Control-Allow-Origin': '*'

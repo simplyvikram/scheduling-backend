@@ -2,6 +2,9 @@
 from flask import request
 from flask.ext.restful.reqparse import RequestParser
 
+from scheduling_backend.handlers import (
+    no_data_handler
+)
 from scheduling_backend.handlers import BaseHandler, authentication_handler
 from scheduling_backend.user_operations import (
     UserOperations,
@@ -24,6 +27,7 @@ class LoginHandler(BaseHandler):
         super(LoginHandler, self).__init__(schema_user_login)
 
 
+    @no_data_handler
     def post(self):
         try:
             username = self.data.get('username')
@@ -55,6 +59,7 @@ class UpdateUserHandler(BaseHandler):
         super(UpdateUserHandler, self).__init__(None)
 
     @authentication_handler
+    @no_data_handler
     def get(self):
 
         params_parser = RequestParser()
@@ -87,4 +92,4 @@ class UpdateUserHandler(BaseHandler):
 
         user_dict = User.encode(updated_user)
         user_dict = remove_id_from_user_dict(user_dict)
-        return user_dict
+        return user_dict, 200
