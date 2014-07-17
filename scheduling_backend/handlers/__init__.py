@@ -55,9 +55,12 @@ def authentication_handler(func):
             request._passwordhash
         )
 
-
         if not user:
-            return "Cannot authenticte user", 401
+            cors_headers = {
+                'Access-Control-Allow-Origin': '*'
+            }
+
+            return "Cannot authenticte user", 401, cors_headers
             # raise UserException("Could not authenticate user")
 
         return func(inst, *args, **kwargs)

@@ -39,7 +39,7 @@ class LoginHandler(BaseHandler):
                 username=username, passwordhash=passwordhash)
 
             if not user:
-                return "Cannot authenticate user", 401
+                return "Cannot authenticate user", 400
                 # raise UserException('Cannot authenticate user')
 
 
