@@ -23,7 +23,6 @@ class HoursWorkedPerEmployeeHandler(BaseHandler):
         super(HoursWorkedPerEmployeeHandler, self).__init__(None)
 
     @authentication_handler
-    @no_data_handler
     def get(self, from_date_str, to_date_str):
 
         from_date_str = DateUtils.to_datetime_format(from_date_str,
@@ -131,7 +130,6 @@ class HoursWorkedPerShiftRole(BaseHandler):
 
 
     @authentication_handler
-    @no_data_handler
     def get(self, job_id):
 
         job = DatabaseManager.find_object_by_id(Collection.JOBS, job_id, True)
@@ -227,6 +225,7 @@ def generate_file_response(file_content, complete_file_name):
 
     response = make_response(file_content)
     response.headers[content_key] = content_value
+    response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
 
