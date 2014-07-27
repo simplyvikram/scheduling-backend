@@ -111,6 +111,17 @@ def create_app(name, config_object):
     register_views(app)
 
     init_db(app)
+
+    @app.after_request
+    def initialize_cors_headers(response):
+
+        if response.headers is None:
+            response.headers = dict()
+
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
     return app
 
 
