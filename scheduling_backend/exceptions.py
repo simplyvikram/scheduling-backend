@@ -11,7 +11,7 @@ class UserException(Exception):
         """
         self.code = code
         self.message = message
-        self.data = json.dumps({"error": message})
+        self.data = {"error": message}
 
 
 def generate_REST_exception(e):
