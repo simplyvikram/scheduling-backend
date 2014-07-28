@@ -119,39 +119,63 @@ def marshaling_handler(func):
     return wrapper
 
 
-def delete_handler(func):
-    """
-    Decorator for REST delete operation, adds CORS support
-    """
-
-    cors_headers = {
-        'Access-Control-Allow-Origin': '*'
-    }
-
-    @wraps(func)
-    def wrapper(inst, *args, **kwargs):
-
-        resp_data, status = func(inst, *args, **kwargs)
-
-        return resp_data, status, cors_headers
-
-    return wrapper
+# def delete_handler(func):
+#     """
+#     Decorator for REST delete operation, adds CORS support
+#     """
+#
+#     cors_headers = {
+#         'Access-Control-Allow-Origin': '*'
+#     }
+#
+#     @wraps(func)
+#     def wrapper(inst, *args, **kwargs):
+#
+#         resp_data, status = func(inst, *args, **kwargs)
+#
+#         return resp_data, status, cors_headers
+#
+#     return wrapper
 
 
 # todo fix this soon
 # todo merge it with delete_handler() maybe??
 # todo bad name, we actually return data here
+# def no_data_handler(func):
+#     cors_headers = {
+#         'Access-Control-Allow-Origin': '*'
+#     }
+#
+#     @wraps(func)
+#     def wrapper(inst, *args, **kwargs):
+#
+#         resp_data, status = func(inst, *args, **kwargs)
+#
+#         return resp_data, status, cors_headers
+#
+#     return wrapper
+
+
 def no_data_handler(func):
-    cors_headers = {
-        'Access-Control-Allow-Origin': '*'
-    }
 
     @wraps(func)
     def wrapper(inst, *args, **kwargs):
 
-        resp_data, status = func(inst, *args, **kwargs)
+        return func(inst, *args, **kwargs)
 
-        return resp_data, status, cors_headers
+    return wrapper
+
+
+
+def delete_handler(func):
+    """
+    Decorator for REST delete operation, adds CORS support
+    """
+
+    @wraps(func)
+    def wrapper(inst, *args, **kwargs):
+
+        return func(inst, *args, **kwargs)
 
     return wrapper
 
